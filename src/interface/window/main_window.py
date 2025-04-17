@@ -1,5 +1,5 @@
 import dearpygui.dearpygui as dpg
-from interface.window import Window
+from interface.window.window import Window
 
 
 class MainWindow(Window):
@@ -7,7 +7,7 @@ class MainWindow(Window):
     def __init__(self, name, width=800, height=600):
         super().__init__(name, width, height)
 
-    def load(self):
+    def draw_self(self):
         if not self.is_opened:
             with dpg.window(label=self.name, tag=self.name, width=self.width, height=self.height):
                 dpg.add_text("Welcome to the Main Window!")
