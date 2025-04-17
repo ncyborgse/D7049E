@@ -17,6 +17,7 @@ class Window(ABC):
             raise TypeError("Component must be an instance of Component.")
 
     def load(self):
+        self.is_opened = True
         self.draw_self()
         for component in self.components:
             with dpg.child_window(width=component.width, height=component.height, tag=component.name, parent=self.name):
