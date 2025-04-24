@@ -1,7 +1,7 @@
 import dearpygui.dearpygui as dpg
-from interface.component.interface_component import InterfaceComponent
+from editor.element.display_element import DisplayElement
 
-class Button(InterfaceComponent):
+class Button(DisplayElement):
     def __init__(self, name, label, width=100, height=30, callback=None):
         super().__init__(name, width, height)
         self.label = label

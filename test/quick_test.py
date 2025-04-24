@@ -4,9 +4,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 import dearpygui.dearpygui as dpg
-from interface.interface_manager import InterfaceManager
-from interface.window.main_window import MainWindow
-from interface.component.button import Button
+from editor.interface_manager import InterfaceManager
+from editor.window.main_window import MainWindow
 
 # Create an instance of InterfaceManager   
 manager = InterfaceManager()
