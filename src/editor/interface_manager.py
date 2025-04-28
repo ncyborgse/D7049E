@@ -30,7 +30,8 @@ class InterfaceManager:
     def load_window(self, window_name):
         for window in self.windows:
             if window.name == window_name:
-                window.load()
+                with dpg.window(label=window.name, tag=window.name, width=window.width, height=window.height):
+                    window.load()
                 break
         else:
             print(f"Window '{window_name}' not found.")

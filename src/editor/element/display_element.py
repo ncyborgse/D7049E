@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import dearpygui.dearpygui as dpg
 
-class InterfaceComponent(ABC):
+class DisplayElement(ABC):
     def __init__(self, name, width=800, height=600):
         self.width = width
         self.height = height
@@ -9,10 +9,10 @@ class InterfaceComponent(ABC):
         self.children = []
 
     def add_child(self, child):
-        if isinstance(child, InterfaceComponent):
+        if isinstance(child, DisplayElement):
             self.children.append(child)
         else:
-            raise TypeError("Child must be an instance of component.")
+            raise TypeError("Child must be an instance of a display element.")
         
     def remove_child(self, child):
         if child in self.children:
@@ -24,9 +24,9 @@ class InterfaceComponent(ABC):
     def draw_self(self):
         pass
 
-    def draw(self):
+    def load(self):
         self.draw_self()
         for child in self.children:
             with dpg.child_window(width=self.width, height=self.height, tag=child.name):
-                child.draw()
+                child.load()
         
