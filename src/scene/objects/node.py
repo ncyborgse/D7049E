@@ -6,6 +6,7 @@ transform
 parent
 children
 components
+eventEmittter - not implemented yet
 
 attach(parent)
 add/removeComponent(component)
@@ -13,6 +14,7 @@ getComponents/Children()
 getWoldtransform()
 getLocaltransform()
 callEvent(Event)
+rename(string)
 '''
 
 class Node:
@@ -37,6 +39,9 @@ class Node:
 
     def call_event(self, event):
         pass
+
+    def rename(self, new_name):
+        self.name = new_name
 
 
     # Child management
