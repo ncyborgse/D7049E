@@ -1,9 +1,12 @@
+import numpy as np
+
 '''
 name/id
 transform
 parent
 children
 components
+eventEmittter - not implemented yet
 
 attach(parent)
 add/removeComponent(component)
@@ -11,6 +14,7 @@ getComponents/Children()
 getWoldtransform()
 getLocaltransform()
 callEvent(Event)
+rename(string)
 '''
 
 class Node:
@@ -19,21 +23,25 @@ class Node:
         self.parent = parent
         self.children = []
         self.components = []
+        self.transform = transform
         if parent:
             parent.add_child(self)
-            self.transform = parent.getTransform() * transform
 
 
     def attach(self, parent_node):
         if self.parent:
             self.parent.remove_child(self)
         parent_node.add_child(self)
+        self.parent = parent_node
 
     def get_name(self):
         return self.name
 
     def call_event(self, event):
         pass
+
+    def rename(self, new_name):
+        self.name = new_name
 
 
     # Child management
@@ -68,9 +76,9 @@ class Node:
 
     def get_world_transform(self):
         if self.parent:
-            return self.parent.get_world_transform() * self.transform
+            return np.dot(self.parent.get_world_transform(), self.transform)
         else:
             return self.transform
-    
+
     def get_local_transform(self):
         return self.transform

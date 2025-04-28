@@ -1,8 +1,13 @@
+import numpy as np
+import objects.node as Node
+
 '''
 root
+name
 
-invoke()?
 getRoot()
+addNode(node)
+moveNode(node)
 '''
 
 class SceneGraph:
@@ -10,18 +15,17 @@ class SceneGraph:
         if node:
             self.root = node
         else:
-            self.root = Node("root", None)
-        self.nodes = [self.root]
+            self.root = Node.Node("root", np.identity(4), None)
 
-    def add_node(self, node):
-        self.nodes.append(node)
 
-    def remove_node(self, node):
-        if node in self.nodes:
-            self.nodes.remove(node)
+    def get_name(self):
+        return self.root.get_name()
 
     def get_root(self):
         return self.root
 
-    def invoke(self, event):
-        pass
+    def add_node(self, node):
+        node.attach(self.root)
+
+    def move_node(self, node, parent_node):
+        node.attach(parent_node)
