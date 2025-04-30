@@ -1,5 +1,5 @@
 import numpy as np
-import objects.node as Node
+from scene.objects.node import Node
 
 '''
 root
@@ -15,11 +15,7 @@ class SceneGraph:
         if node:
             self.root = node
         else:
-            self.root = Node.Node("root", np.identity(4), None)
-
-
-    def get_name(self):
-        return self.root.get_name()
+            self.root = Node("root", np.identity(4), None)
 
     def get_root(self):
         return self.root
@@ -29,3 +25,15 @@ class SceneGraph:
 
     def move_node(self, node, parent_node):
         node.attach(parent_node)
+
+    # Recursive function to find a node by name in the scene graph
+    def get_by_name_in(self, root, name):
+        if root.get_name() == name:
+            return root
+        for child in root.get_children():
+            result = self.get_by_name_in(child, name)
+            if result:
+                return result
+        return None
+
+
