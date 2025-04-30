@@ -1,0 +1,31 @@
+import dearpygui as dpg
+from editor.window.window import Window
+from editor.element.component_element import ComponentElement, AddComponentElement
+
+
+class InspectorWindow(Window):
+    def __init__(self, name, width=400, height=600):
+        super().__init__(name, width, height)
+        self.selected_node = None  # Placeholder for the active node
+
+    def load_node(self, node):
+        self.selected_node = node
+        self.refresh_inspector()
+
+    def refresh_inspector(self):
+        self.children.clear()
+
+        if self.selected_node:
+            for component in self.selected_node.get_components():
+                self.add_child(ComponentElement(component))
+            
+            self.add_child(AddComponentElement(self.selected_node))
+
+        if self.is_opened:
+            self.unload()
+            self.load()
+    
+    def draw_self(self):
+        with dpg.window(label=self.name, tag=self.name, width=self.width, height=self.height):
+            dpg.add_text("Inspector Window")
+            dpg.add_separator()

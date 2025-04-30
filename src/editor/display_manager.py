@@ -1,7 +1,7 @@
 import dearpygui.dearpygui as dpg
 
 
-class InterfaceManager:
+class DisplayManager:
     def __init__(self):
         self.windows = []
 

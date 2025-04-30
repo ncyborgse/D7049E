@@ -6,7 +6,7 @@ from editor.window.test_window import TestWindow
 
 class MainWindow(Window):
 
-    def __init__(self, name, width=800, height=600):
+    def __init__(self, name, width=1200, height=900):
         super().__init__(name, width, height)
 
     def draw_self(self):
