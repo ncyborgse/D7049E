@@ -12,3 +12,6 @@ class Component(ABC):
 
     def attach(self, node):
         node.add_component(self)
+
+    def get_name(self):
+        return self.name

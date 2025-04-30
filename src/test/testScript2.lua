@@ -3,7 +3,7 @@ function onStart()
 
     local node1 = game.SceneGraph.get_by_name_in(game.SceneGraph.get_root(), "Node1")
 
-    print("Before node1")
+
     local components = node1.get_components()
 
 
@@ -12,17 +12,16 @@ function onStart()
     for i = 1, #components do
         local comp = components[i]
 
-        if (comp.get_name() == "testScript") then
+        if (comp.get_name() == "Script1") then
             scriptComp = comp
             break
         end
     end
 
-    print("After node1")
-
     -- Run the function "printBingus" in the script component
 
     if (scriptComp ~= nil) then
+        print("Found script component")
         scriptComp.run_function("printBingus")
     end
 end

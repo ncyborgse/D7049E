@@ -1,11 +1,15 @@
 from scene.components.component import Component
 from lupa import LuaRuntime
+from utilities.lua_proxy import LuaProxy
 
 class Script(Component):
     def __init__(self, name="Script", engine_api=None):
         super().__init__(name=name)
         self.source = None
         self.lua = LuaRuntime(unpack_returned_tuples=True)
+
+        # Try to create a table to see if Lua is working
+
         self.globals = None
 
         # Set up environment for Lua
@@ -45,12 +49,10 @@ class Script(Component):
 
         for component_name, component in self.engine_api.items():
 
-            # Each component is exposed as its own table under `game`
+            # Expose the proxy object to Lua
 
-            game_api[component_name] = self.lua.table()
-
-            for func_name, func in component.items():
-                game_api[component_name][func_name] = func
+            proxy = LuaProxy(component, self.lua)
+            game_api[component_name] = proxy
 
         env["game"] = game_api
 
@@ -68,7 +70,7 @@ class Script(Component):
 
             if public_vars:
                 for var_name, var_value in public_vars.items():
-                    self.environment[var_name] = var_value
+                    self.environment[var_name] = LuaProxy(var_value, self.lua)
         
             loader_func = self.lua.execute('''
                     return function(script_code, env)
