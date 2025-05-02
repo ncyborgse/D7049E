@@ -11,7 +11,8 @@ moveNode(node)
 '''
 
 class SceneGraph:
-    def __init__(self, node=None):
+    def __init__(self, node=None, name="Scene"):
+        self.name = name
         if node:
             self.root = node
         else:
@@ -35,5 +36,12 @@ class SceneGraph:
             if result:
                 return result
         return None
+
+    def get_name(self):
+        return self.name
+    
+    def rename(self, name):
+        self.name = name
+    
 
 

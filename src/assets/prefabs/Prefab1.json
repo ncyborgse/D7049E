@@ -1,0 +1,38 @@
+{
+    "name": "Node1",
+    "transform": [
+        [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+        ],
+        [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+        ],
+        [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ]
+    ],
+    "children": [],
+    "components": [
+        {
+            "name": "Script1",
+            "type": "Script",
+            "source": "src/test/testScript.lua",
+            "public_vars": {}
+        }
+    ]
+}

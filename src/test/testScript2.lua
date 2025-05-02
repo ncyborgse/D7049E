@@ -1,7 +1,9 @@
 function onStart()
     -- Find node1 and get it's script component
 
-    local node1 = game.SceneGraph.get_by_name_in(game.SceneGraph.get_root(), "Node1")
+    local sceneGraph = game.SceneManager.get_current_scene()
+
+    local node1 = sceneGraph.get_by_name_in(sceneGraph.get_root(), "Node1")
 
 
     local components = node1.get_components()

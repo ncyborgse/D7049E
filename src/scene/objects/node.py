@@ -1,24 +1,8 @@
 import numpy as np
-
-'''
-name/id
-transform
-parent
-children
-components
-eventEmittter - not implemented yet
-
-attach(parent)
-add/removeComponent(component)
-getComponents/Children()
-getWoldtransform()
-getLocaltransform()
-callEvent(Event)
-rename(string)
-'''
+from core.component_registry import component_registry
 
 class Node:
-    def __init__(self, name, transform, parent=None):
+    def __init__(self, name, transform=np.identity(4), parent=None):
         self.name = name
         self.parent = parent
         self.children = []
@@ -82,3 +66,30 @@ class Node:
 
     def get_local_transform(self):
         return self.transform
+    
+    # Prefab support
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "transform": self.transform.tolist(),  # Convert numpy array to list for JSON serialization
+            "children": [child.to_dict() for child in self.children],
+            "components": [component.to_dict() for component in self.components]
+        }
+
+    @classmethod
+    def from_dict(self, data):
+        name = data.get("name", "Node")
+        transform = np.array(data.get("transform", np.identity(4)))
+        node = Node(name, transform)
+        for child_data in data.get("children", []):
+            child_node = Node.from_dict(child_data)
+            node.add_child(child_node)
+        for component_data in data.get("components", []):
+            component_type = component_data.get("type")
+            if component_type in component_registry:
+                component = component_registry[component_type].from_dict(component_data)
+                node.add_component(component)
+            else:
+                raise ValueError(f"Unknown component type: {component_type}")
+        return node
