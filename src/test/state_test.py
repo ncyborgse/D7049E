@@ -3,6 +3,7 @@ from scene.objects.node_builder import NodeBuilder
 from scene.component.components.script import Script
 from scene.scene_graph import SceneGraph
 from core.scene_manager import SceneManager
+from core.state_manager import StateManager
 from scene.objects.node import Node
 import numpy as np
 from pyee import EventEmitter
@@ -11,6 +12,10 @@ from pyee import EventEmitter
 def create_prefabs():
 
     scene_manager = SceneManager()
+    state_manager = StateManager()
+    state_manager.set_scene_manager(scene_manager)
+    state_manager.new_project("Proj1")
+    state_manager.load_project("Proj1")
 
     scene_graph = SceneGraph(name="Scene1")
 
@@ -37,25 +42,22 @@ def create_prefabs():
     node1.add_component(script1)
     scene_graph.add_node(node1)
 
-    node_builder = NodeBuilder(src)
-    node_builder.save_prefab("Prefab1", node1)
+    state_manager.save_project()
 
-    emitter.emit("onStart")
 
 
 def load_and_run():
-    src = pathlib.Path(__file__).parent.parent / "assets" / "prefabs"
-    node_builder = NodeBuilder(src)
-
     scene_manager = SceneManager()
-    scene_graph = SceneGraph(name="Scene1")
-    scene_manager.add_scene(scene_graph)
-    scene_manager.load_scene("Scene1")
+
+    state_manager = StateManager()
+    state_manager.set_scene_manager(scene_manager)
+    state_manager.load_project("Proj1")
+
+    scene_graph = scene_manager.get_current_scene()
+
+    node = scene_graph.get_by_name_in(scene_graph.get_root(), "Node1")
 
     event_emitter = EventEmitter()
-
-    node = node_builder.build("Prefab1")
-
 
     for component in node.get_components():
         component.on_runtime_init(scene_manager)
@@ -63,7 +65,7 @@ def load_and_run():
     
     event_emitter.emit("onStart")
 
-
+#create_prefabs()
 load_and_run()
 
     

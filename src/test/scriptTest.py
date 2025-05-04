@@ -1,6 +1,6 @@
 from scene.component.components.script import Script
 from scene.scene_graph import SceneGraph
-from core.SceneManager import SceneManager
+from core.scene_manager import SceneManager
 from scene.objects.node import Node
 from pyee import EventEmitter
 
