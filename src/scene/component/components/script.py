@@ -138,10 +138,17 @@ class Script(Component):
         return base
 
     @classmethod
-    def from_dict(self, data):
+    def from_dict(self, data, scene_manager):
+        engine_api = {
+            "SceneManager" : {
+                "load_scene" : scene_manager.load_scene,
+                "get_current_scene" : scene_manager.get_current_scene,
+                "get_scenes" : scene_manager.get_scenes,
+            }
+        }
         name = data.get("name", "Script")
         source = data.get("source")
         public_vars = data.get("public_vars", {})
         script = Script(name=name)
-        script.attach_script(source, public_vars)
+        script.attach_script(source, engine_api, public_vars=public_vars)
         return script
