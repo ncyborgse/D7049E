@@ -42,6 +42,3 @@ class SceneGraph:
     
     def rename(self, name):
         self.name = name
-    
-
-

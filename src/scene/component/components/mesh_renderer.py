@@ -1,17 +1,47 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))    # Fix the import path
+
 import numpy as np
-from pyrr import Matrix44
 from pywavefront import Wavefront
+from scene.component.component import Component
+from core.component_registry import register_component
 
 
-class MeshRenderer:
-    def __init__(self, ctx, obj_path: str):
+@register_component
+class MeshRenderer(Component):
+    def __init__(self, ctx, obj_path: str, name="MeshRenderer"):
+        super().__init__(name=name)
+        self.enabled = False
+
         self.ctx = ctx
         self.scene = Wavefront(obj_path, collect_faces=True)
         self.vertices, self.vertex_indices = self._prepare_vertex_data()
         self.vbo = self.ctx.buffer(self.vertices.tobytes())
         self.program = self._create_shader_program()
         self.vao = self.ctx.vertex_array(self.program, [(self.vbo, '3f 3f', 'in_vert', 'in_normal')])
-        self.model_matrix = Matrix44.identity()
+        self.transform = np.identity(4)
+
+
+    def subscribe(self, event_emitter):
+        # On spawn, enable the mesh renderer
+        event_emitter.on("onSpawn", self.enable)
+        # On destroy, disable the mesh renderer
+        event_emitter.on("onDestroy", self.disable)
+
+
+    def enable(self):
+        if self.enabled:
+            raise RuntimeError("Mesh Renderer is already enabled.")
+        self.enabled = True
+        #self.render_manager.add_mesh(self)
+
+    def disable(self):
+        if not self.enabled:
+            raise RuntimeError("Collider is already disabled.")
+        self.enabled = False
+        #self.render_manager.remove_mesh(self)
+
 
     def _prepare_vertex_data(self):
         vertex_list = self.scene.vertices
@@ -73,12 +103,20 @@ class MeshRenderer:
             '''
         )
 
-    def set_model_matrix(self, matrix: Matrix44):
-        self.model_matrix = matrix
+    def set_transform(self, transform):
+        # Ensure transform is a 4x4 matrix
+        if transform.shape != (4, 4):
+            raise ValueError("Transform must be a 4x4 matrix.")
+        self.transform = transform
 
-    def render(self, view_matrix: Matrix44, projection_matrix: Matrix44, light_dir=(1.0, 1.0, 1.0)):
-        mvp = projection_matrix * view_matrix * self.model_matrix
+    def render(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0)):
+        mvp = np.dot( np.dot(projection_matrix, view_matrix), self.transform )
         self.program['mvp'].write(mvp.astype('f4').tobytes())
-        self.program['model'].write(self.model_matrix.astype('f4').tobytes())
+        self.program['model'].write(self.transform.astype('f4').tobytes())
         self.program['light_dir'].value = light_dir
         self.vao.render()
+
+
+    @classmethod
+    def from_dict(self, data, scene_manager):
+        pass

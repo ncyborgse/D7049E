@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 import moderngl
 import pyglet
-from pyrr import Matrix44
+import numpy as np #from pyrr import Matrix44
 from scene.component.components.mesh_renderer import MeshRenderer
 from core.render_manager import RenderManager
 
@@ -27,20 +27,37 @@ render_manager.add_mesh(mesh1)
 render_manager.add_mesh(mesh2)
 
 # Optional: move the mesh to a different position
-mesh1.set_model_matrix(Matrix44.from_translation([-5, -15, -10]))
-mesh2.set_model_matrix(Matrix44.from_translation([0, -15, -10]))
+transform1 = np.array([
+    [-5,  0,  0, 0],
+    [ 0, -15,  0, 0],
+    [ 0,  0, -5, 0],
+    [ 0,  0,  0, 1]
+], dtype='f4')  # or dtype='float32'
+transform2 = np.array([
+    [-5,  0,  0, 0],
+    [ 0, -5,  0, 0],
+    [ 0,  0, -10, 0],
+    [ 0,  0,  0, 1]
+], dtype='f4')  # or dtype='float32'
+mesh1.set_transform(transform1)
+mesh2.set_transform(transform2)
+
 
 @window.event
 def on_draw():
     ctx.clear(0.1, 0.1, 0.1)
-    
+
     # Create view and projection matrices
-    view = Matrix44.look_at(
-        eye=(5.0, 7.0, 6.0),
-        target=(0.0, 0.0, 0.0),
-        up=(0.0, 1.0, 0.0)
-    )
-    proj = Matrix44.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
+
+    view = render_manager.look_at( (5.0, 7.0, 6.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+    #view = Matrix44.look_at(
+    #    eye=(5.0, 7.0, 6.0),
+    #    target=(0.0, 0.0, 0.0),
+    #    up=(0.0, 1.0, 0.0)
+    #)
+
+    proj = render_manager.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
+    #proj = Matrix44.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
 
     # Render all meshes
     render_manager.render_all(view, proj, light_dir=(1.0, 1.0, 1.0))
