@@ -1,0 +1,66 @@
+# Blender 4.2.1 LTS MTL File: 'Mjolnir_Toscaleblend.blend'
+# www.blender.org
+
+newmtl Brown_fine_wood
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd fine_wood_diffuse.jpg
+map_Bump -bm 1.000000 fine_wood_normal.jpg
+
+newmtl Gold_Sheen.003
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Gold_Unpolished_basecolor.tga
+map_Ns Gold_Unpolished_roughness.tga
+map_refl Gold_Unpolished_metallic.tga
+
+newmtl Gold_Sheen.004
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Gold_Unpolished_basecolor.tga
+map_Ns Gold_Unpolished_roughness.tga
+map_refl Gold_Unpolished_metallic.tga
+
+newmtl Gold_Sheen.005
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Gold_Unpolished_basecolor.tga
+map_Ns Gold_Unpolished_roughness.tga
+map_refl Gold_Unpolished_metallic.tga
+
+newmtl Mat_HP.002
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Material.002
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
