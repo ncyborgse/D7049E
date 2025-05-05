@@ -5,6 +5,10 @@ function onStart()
     print("Bingus")
 end
 
+function onUpdate(deltaTime)
+    print("BingusBoss onUpdate" .. tostring(deltaTime))
+end
+
 function printBingus()
     print("Bingus")
 end
