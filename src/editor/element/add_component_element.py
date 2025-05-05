@@ -1,3 +1,3 @@
 
-class AddComponentElement:
-  pass
+class AddComponenetElement:
+    pass
