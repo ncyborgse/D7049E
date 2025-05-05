@@ -4,16 +4,26 @@ from abc import ABC, abstractmethod
 class Component(ABC):
     def __init__(self, name):
         self.name = name
+        self.subscriptions = []
 
     @abstractmethod
     def subscribe(self, event_emitter):
         # Subscribe a number of functions to the event emitter
         pass
 
-    @abstractmethod
-    def on_runtime_init(self, scene_manager):
-        # Called when the runtime is initialized
-        pass
+    def subscribe_to(self, event_emitter, event, callback):
+        # Subscribe a single function to the event emitter
+        if callable(callback):
+            self.subscriptions.append((event, callback))
+            event_emitter.on(event, callback)
+        else:
+            raise TypeError(f"Callback for event '{event}' is not callable.")
+        
+    def unsubscribe_all(self, event_emitter):
+        # Unsubscribe a number of functions from the event emitter
+        for subscription in self.subscriptions:
+            event_emitter.remove_listener(subscription[0], subscription[1])
+        self.subscriptions = []
 
     def attach(self, node):
         node.add_component(self)
@@ -31,6 +41,6 @@ class Component(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(self, data):
+    def from_dict(self, data, scene_manager):
         # Populate the component from a dictionary
         pass

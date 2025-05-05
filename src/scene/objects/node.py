@@ -1,5 +1,6 @@
 import numpy as np
 from core.component_registry import component_registry
+import pyee
 
 class Node:
     def __init__(self, name, transform=np.identity(4), parent=None):
@@ -8,6 +9,7 @@ class Node:
         self.children = []
         self.components = []
         self.transform = transform
+        self.event_emitter = pyee.EventEmitter()
         if parent:
             parent.add_child(self)
 
@@ -21,8 +23,22 @@ class Node:
     def get_name(self):
         return self.name
 
-    def call_event(self, event):
-        pass
+    def get_event_emitter(self):
+        return self.event_emitter
+
+    def call_event(self, event, *args, **kwargs):
+        self.event_emitter.emit(event, *args, **kwargs)
+
+    def call_event_rec(self, event, *args, **kwargs):
+        self.call_event(event, *args, **kwargs)
+        for child in self.children:
+            child.call_event_rec(event, *args, **kwargs)
+
+    def subscribe_children_rec(self):
+        for component in self.components:
+            component.subscribe(self.event_emitter)
+        for child in self.children:
+            child.subscribe_children_rec()
 
     def rename(self, new_name):
         self.name = new_name
@@ -78,17 +94,17 @@ class Node:
         }
 
     @classmethod
-    def from_dict(self, data):
+    def from_dict(self, data, scene_manager):
         name = data.get("name", "Node")
         transform = np.array(data.get("transform", np.identity(4)))
         node = Node(name, transform)
         for child_data in data.get("children", []):
-            child_node = Node.from_dict(child_data)
+            child_node = Node.from_dict(child_data, scene_manager)
             node.add_child(child_node)
         for component_data in data.get("components", []):
             component_type = component_data.get("type")
             if component_type in component_registry:
-                component = component_registry[component_type].from_dict(component_data)
+                component = component_registry[component_type].from_dict(component_data, scene_manager)
                 node.add_component(component)
             else:
                 raise ValueError(f"Unknown component type: {component_type}")

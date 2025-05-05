@@ -31,33 +31,63 @@ class Script(Component):
 
         # Check if context is set
         if not self.globals:
-            raise RuntimeError("Script context is not set. Please attach a script first.")
+            raise RuntimeError("Script context is not set. Please load a script first.")
 
         for event in supported_events:
             callback = self.globals[event]
-            if callback:
-                if callable(callback):
-                    event_emitter.on(event, callback)
-                else:
-                    raise TypeError(f"Event '{event}' is not callable.")
+            if callable(callback):
+                super().subscribe_to(event_emitter, event, callback)
+        
 
-    def on_runtime_init(self, scene_manager):
-        # Add engine API to Lua environment
-        engine_api = {
-            "SceneManager" : {
-                "load_scene" : scene_manager.load_scene,
-                "get_current_scene" : scene_manager.get_current_scene,
-                "get_scenes" : scene_manager.get_scenes,
-            }
+    def create_environment(self):
+        lua_globals = self.lua.globals()
+        env = self.lua.table()
+
+        # Copy standard Lua functions to the environment
+        for name, func in lua_globals.items():
+            if callable(func):
+                env[name] = func
+
+        blacklist = {
+            "os": ["exit", "execute", "remove", "rename", "setlocale", "tmpname"],
+            "io": ["open", "popen", "tmpfile", "type", "lines", "read", "write"],
+            "_G": True,
+            "dofile": True,
+            "load": True,
+            "loadfile": True,
+            "require": True,
         }
+
+        for key, value in blacklist.items():
+            if value is True:
+                env[key] = None
+            elif isinstance(value, list):
+                for func in value:
+                    env[key][func] = None
+
+        game_api = self.lua.table()
+
+        for component_name, component in self.engine_api.items():
+
+            # Expose the proxy object to Lua
+
+            proxy = LuaProxy(component, self.lua)
+            game_api[component_name] = proxy
+
+        env["game"] = game_api
+
+        return env
+
+    def attach_script(self, source, engine_api, public_vars=None):
+        
+
+        # Add engine API to Lua environment
 
         self.engine_api = engine_api
 
         # Read script file and subscribe to events
 
-        public_vars = self.public_vars if self.public_vars else {}
-
-        with (open(self.source, 'r')) as file:
+        with (open(source, 'r')) as file:
             script = file.read()
 
             self.environment = self.create_environment()
@@ -88,33 +118,6 @@ class Script(Component):
                 raise RuntimeError(f"Error executing script: {e}")
 
             self.globals = self.environment
-
-
-        
-
-    def create_environment(self):
-        env = self.lua.table()
-
-        env["print"] = self.lua.globals()["print"]
-        env["math"] = self.lua.globals()["math"]
-        env["ipairs"] = self.lua.globals()["ipairs"]
-
-        game_api = self.lua.table()
-
-        for component_name, component in self.engine_api.items():
-
-            # Expose the proxy object to Lua
-
-            proxy = LuaProxy(component, self.lua)
-            game_api[component_name] = proxy
-
-        env["game"] = game_api
-
-        return env
-
-    def attach_script(self, source, public_vars=None):
-        self.source = source
-        self.public_vars = public_vars if public_vars else {}
 
     def run_function(self, func_name, *args):
         if self.globals and func_name in self.globals:
