@@ -17,7 +17,9 @@ class SceneGraphWindow(Window):
 
         if self.selected_scene_graph:
             for node in self.selected_scene_graph.get_root().get_children():
-                self.add_child(SceneGraphElement(node))
+                self.add_child(SceneGraphElement(
+                    node, 
+                    inspector_callback=self.inspector_window.load_node))
             
             self.add_child(AddSceneGraphElement(self.selected_scene_graph))
 
