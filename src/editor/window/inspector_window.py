@@ -27,5 +27,5 @@ class InspectorWindow(Window):
     
     def draw_self(self):
         with dpg.window(label=self.name, tag=self.name, width=self.width, height=self.height):
-            dpg.add_text("Inspector Window")
+            dpg.add_text("Inspector")
             dpg.add_separator()
