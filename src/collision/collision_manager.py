@@ -28,9 +28,10 @@ class CollisionManager:
                 for child in current_node.get_children():
                     nodes_to_check.append(child)
 
-    def check_collisions(self):
-        # Move all pybullet shapes to their correct positions
+    def check_collisions(self):        
+
         collision_map = {}
+        p.stepSimulation(physicsClientId=self.physics_client)  # Step the simulation to update positions
 
     
 
@@ -56,23 +57,10 @@ class CollisionManager:
 
         ids = list(collision_map.keys())
 
-
-
-        pos1 = p.getBasePositionAndOrientation(ids[0])[0]
-        pos2 = p.getBasePositionAndOrientation(ids[1])[0]
-        print("Position 1:", pos1)
-        print("Position 2:", pos2)
-        shape1 = p.getVisualShapeData(ids[0])
-        shape2 = p.getVisualShapeData(ids[1])
-        print("Shape 1:", shape1)
-        print("Shape 2:", shape2)
-        contact_points = p.getContactPoints(bodyA=ids[0], bodyB=ids[1])
-        print("Contact points:", contact_points)
-
         # Perform collision detection
         collision_pairs = p.getContactPoints()
 
-        print("Collision pairs:", collision_pairs)
+
 
 
         
@@ -84,20 +72,18 @@ class CollisionManager:
 
         for pair in collision_pairs:
 
-            # Sort collision pairs to guarantee consistent ordering
 
-            pair[0], pair[1] = sorted(pair[:2])
             if pair not in self.prev_collisions:
-                collision_map[pair[0]]["new"].append(pair[1])
-                collision_map[pair[1]]["new"].append(pair[0])
+                collision_map[pair[0]]["new"].append(collision_map[pair[1]]["collider"].get_parent())
+                collision_map[pair[1]]["new"].append(collision_map[pair[0]]["collider"].get_parent())
 
-            collision_map[pair[0]]["ongoing"].append(pair[1])
-            collision_map[pair[1]]["ongoing"].append(pair[0])
+            collision_map[pair[0]]["ongoing"].append(collision_map[pair[1]]["collider"].get_parent())
+            collision_map[pair[1]]["ongoing"].append(collision_map[pair[0]]["collider"].get_parent())
 
         for pair in self.prev_collisions:
             if pair not in collision_pairs:
-                collision_map[pair[0]]["ending"].append(pair[1])
-                collision_map[pair[1]]["ending"].append(pair[0])
+                collision_map[pair[0]]["ending"].append(collision_map[pair[1]]["collider"].get_parent())
+                collision_map[pair[1]]["ending"].append(collision_map[pair[0]]["collider"].get_parent())
 
         # Update the previous collisions list
         self.prev_collisions = collision_pairs
@@ -106,9 +92,12 @@ class CollisionManager:
         for shape_id, collision_data in collision_map.items():
             collider = collision_data["collider"]
             node = collider.get_parent()
-            node.call_event("enter", collision_data["new"])
-            node.call_event("overlap", collision_data["ongoing"])
-            node.call_event("exit", collision_data["ending"])
+            if collision_data["new"]:
+                node.call_event("enter", collision_data["new"])
+            if collision_data["ongoing"]:
+                node.call_event("overlap", collision_data["ongoing"])
+            if collision_data["ending"]:
+                node.call_event("exit", collision_data["ending"])
 
 
 

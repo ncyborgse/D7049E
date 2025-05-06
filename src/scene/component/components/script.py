@@ -27,7 +27,7 @@ class Script(Component):
         self.public_functions = None
 
     def subscribe(self, event_emitter):
-        supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy'] # Maybe load from file
+        supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit'] # Maybe load from file
 
         # Check if context is set
         if not self.globals:

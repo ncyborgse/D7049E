@@ -27,11 +27,6 @@ scene_graph = SceneGraph(name="Scene1")
 scene_manager.add_scene(scene_graph)
 scene_manager.load_scene("Scene1")
 
-
-
-emitter = EventEmitter()
-
-
 src = "src/test/testScript.lua"
 script1 = Script("Script1")
 script1.attach_script(src, engine_api)
@@ -44,11 +39,17 @@ collider2 = Collider()
 
 
 node1 = Node("Node1", transform  = np.identity(4))
+emitter = node1.get_event_emitter()
 node1.add_component(script1)
 node1.add_component(collider)
+script1.subscribe(emitter)
+collider.subscribe(emitter)
 
 node2 = Node("Node2", transform = np.identity(4))
+emitter2 = node2.get_event_emitter()
 node2.add_component(collider2)
+collider2.subscribe(emitter2)
+
 
 scene_graph.add_node(node1)
 scene_graph.add_node(node2)
