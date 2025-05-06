@@ -57,6 +57,9 @@ class Node:
 
     def get_children(self):
         return self.children
+    
+    def get_parent(self):
+        return self.parent
 
 
     # Component management
