@@ -28,7 +28,6 @@ class Component(ABC):
 
     def attach(self, node):
         self.parent = node
-        node.add_component(self)
 
     def get_name(self):
         return self.name
@@ -40,7 +39,7 @@ class Component(ABC):
             # Subclass-specific attributes can be added here
         }
     
-    def get_parent(self): 
+    def get_parent(self):
         return self.parent
 
     @classmethod

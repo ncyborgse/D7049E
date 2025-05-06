@@ -65,7 +65,8 @@ class Collider(Component):
         return self.transform
     
     def get_world_transform(self):
-        node_transform = self.parent.get_world_transform()
+        
+        node_transform = self.get_parent().get_world_transform()
         return np.dot(node_transform, self.transform)
     
     def to_dict(self):

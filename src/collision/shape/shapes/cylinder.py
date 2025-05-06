@@ -12,6 +12,12 @@ class Cylinder(Shape):
         self.radius = radius
         half_extents = [self.width / 2, self.height / 2, self.radius]
         self.shape_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=self.radius, height=self.height)
+        self.body_id = p.createMultiBody(
+            baseMass = 1,
+            baseCollisionShapeIndex = self.shape_id,
+            basePosition = [0, 0, 0],
+        )
+
 
     def get_type(self):
         return "Cylineder"
@@ -24,7 +30,7 @@ class Cylinder(Shape):
         }
     
     def get_id(self):
-        return self.shape_id
+        return self.body_id
     
     @classmethod
     def from_dict(data):

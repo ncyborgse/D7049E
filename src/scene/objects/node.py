@@ -63,6 +63,7 @@ class Node:
 
     def add_component(self, component):
         self.components.append(component)
+        component.attach(self)
 
     def remove_component(self, component):
         if component in self.components:
@@ -89,6 +90,15 @@ class Node:
     def get_local_transform(self):
         return self.transform
     
+    def set_local_transform(self, transform):
+        if transform.shape != (4, 4):
+            raise ValueError("Transform must be a 4x4 matrix.")
+        self.transform = transform
+
+    def apply_transform(self, transform):
+        if transform.shape != (4, 4):
+            raise ValueError("Transform must be a 4x4 matrix.")
+        self.transform = np.dot(self.transform, transform)
     # Prefab support
 
     def to_dict(self):

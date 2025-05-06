@@ -12,6 +12,11 @@ class Box(Shape):
         self.depth = depth
         half_extents = [self.width / 2, self.height / 2, 0.1]
         self.shape_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=half_extents)
+        self.body_id = p.createMultiBody(
+            baseMass = 1,
+            baseCollisionShapeIndex = self.shape_id,
+            basePosition = [0, 0, 0],
+        )
 
     def get_type(self):
         return "Box"
@@ -25,7 +30,7 @@ class Box(Shape):
         }
     
     def get_id(self):
-        return self.shape_id
+        return self.body_id
 
     
     @classmethod

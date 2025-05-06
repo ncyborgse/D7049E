@@ -1,11 +1,15 @@
-from scene.component.components.collider import Collider
 import pybullet as p
+from scipy.spatial.transform import Rotation as R
+
 
 class CollisionManager:
     def __init__(self, scene_manager):
         self.colliders = []
         self.scene_manager = scene_manager
         self.prev_collisions = []
+        self.physics_client = p.connect(p.DIRECT)  # Connect to PyBullet in DIRECT mode
+        p.setGravity(0, 0, 0)  # Set gravity for the simulation
+
 
 
     def register_colliders(self):
@@ -28,26 +32,55 @@ class CollisionManager:
         # Move all pybullet shapes to their correct positions
         collision_map = {}
 
+    
+
         for collider in self.colliders:
             shape = collider.get_shape()
             id = shape.get_id()
 
             if id not in collision_map:
-                collision_map[id]["collider"] = collider
-                collision_map[id]["new"] = []
-                collision_map[id]["ongoing"] = []
-                collision_map[id]["ending"] = []
+                collision_map[id] = {
+                    "collider": collider,
+                    "new": [],
+                    "ongoing": [],
+                    "ending": []
+                }
 
             transform = collider.get_world_transform()
-            p.resetBasePositionAndOrientation(id, transform[:3, 3], p.getQuaternionFromMatrix(transform[:3, :3]))
-            p.resetBaseVelocity(id, [0, 0, 0], [0, 0, 0])
+
+            rotation_matrix = transform[:3, :3]
+            quaternion = R.from_matrix(rotation_matrix).as_quat()
+            p.resetBasePositionAndOrientation(id, transform[:3, 3], quaternion)
+
+
+
+        ids = list(collision_map.keys())
+
+
+
+        pos1 = p.getBasePositionAndOrientation(ids[0])[0]
+        pos2 = p.getBasePositionAndOrientation(ids[1])[0]
+        print("Position 1:", pos1)
+        print("Position 2:", pos2)
+        shape1 = p.getVisualShapeData(ids[0])
+        shape2 = p.getVisualShapeData(ids[1])
+        print("Shape 1:", shape1)
+        print("Shape 2:", shape2)
+        contact_points = p.getContactPoints(bodyA=ids[0], bodyB=ids[1])
+        print("Contact points:", contact_points)
 
         # Perform collision detection
         collision_pairs = p.getContactPoints()
 
+        print("Collision pairs:", collision_pairs)
+
 
         
         # Separate collisions into new, ongoing, and ending collisions
+
+        collision_pairs = set(
+            tuple(sorted((cp[1], cp[2]))) for cp in collision_pairs if cp[1] != cp[2]
+        )
 
         for pair in collision_pairs:
 

@@ -9,6 +9,12 @@ class Sphere(Shape):
         super().__init__()
         self.radius = radius
         self.shape_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
+        self.body_id = p.createMultiBody(
+            baseMass = 1.0,
+            baseCollisionShapeIndex = self.shape_id,
+            basePosition = [0, 0, 0],
+        )
+
 
 
     def get_type(self):
@@ -21,7 +27,7 @@ class Sphere(Shape):
         }
     
     def get_id(self):
-        return self.shape_id
+        return self.body_id
     
     @classmethod
     def from_dict(data):
