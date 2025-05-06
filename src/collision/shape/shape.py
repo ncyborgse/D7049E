@@ -15,11 +15,11 @@ class Shape(ABC):
 
     @classmethod
     @abstractmethod
-    def from_dict(cls, data):
+    def from_dict(data):
         """Create a shape from a dictionary."""
         pass
     
     @abstractmethod
-    def create_shape(self):
+    def get_id(self):
         pass
     

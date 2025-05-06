@@ -70,6 +70,12 @@ class Node:
 
     def get_components(self):
         return self.components
+    
+    def get_component(self, name):
+        for component in self.components:
+            if component.get_name() == name:
+                return component
+        return None
 
 
     # Transform management
@@ -94,7 +100,7 @@ class Node:
         }
 
     @classmethod
-    def from_dict(self, data, scene_manager):
+    def from_dict(data, scene_manager):
         name = data.get("name", "Node")
         transform = np.array(data.get("transform", np.identity(4)))
         node = Node(name, transform)
