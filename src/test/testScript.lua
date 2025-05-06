@@ -12,3 +12,8 @@ end
 function printBingus()
     print("Bingus")
 end
+
+function overlap(nodes)
+    local firstNode = nodes[1]
+    local nodeName = firstNode.get_name()
+    print("BingusBoss overlap: " .. nodeName)

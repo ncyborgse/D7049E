@@ -5,6 +5,7 @@ class Component(ABC):
     def __init__(self, name):
         self.name = name
         self.subscriptions = []
+        self.parent = None
 
     @abstractmethod
     def subscribe(self, event_emitter):
@@ -26,6 +27,7 @@ class Component(ABC):
         self.subscriptions = []
 
     def attach(self, node):
+        self.parent = node
         node.add_component(self)
 
     def get_name(self):
@@ -37,7 +39,9 @@ class Component(ABC):
             "type": self.__class__.__name__
             # Subclass-specific attributes can be added here
         }
-
+    
+    def get_parent(self): 
+        return self.parent
 
     @classmethod
     @abstractmethod

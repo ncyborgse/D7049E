@@ -1,16 +1,20 @@
 from core.component_registry import register_component
+from collision.shape.shape_registry import shape_registry
 from scene.component.component import Component
-import pybullet as p
+from collision.collision_manager import CollisionManager
+from collision.shape.shape import Shape
+import numpy as np
 
 @register_component
 class Collider(Component):
-    def __init__(self, collision_manager, name="Collider"):
+    def __init__(self, name="Collider"):
         super().__init__(name=name)
-        self.collision_manager = collision_manager
         self.shape = None
         self.transform = None
         self.enabled = True
 
+    def register_collision_manager(self, collision_manager):
+        self.collision_manager = collision_manager
 
     def subscribe(self, event_emitter):
         # On spawn, add the collider to the collision manager
@@ -20,29 +24,32 @@ class Collider(Component):
         
 
     def add_collider(self):
-        if self.enabled:
+        # Check if the collider is enabled before adding it to the collision manager
+        if self.enabled and self.collision_manager:
             self.collision_manager.add_collider(self)
-
+            
+            
     def remove_collider(self):
-        if self.enabled:
+        if self.enabled and self.collision_manager:
             self.collision_manager.remove_collider(self)    
 
     def enable(self):
         if self.enabled:
             raise RuntimeError("Collider is already enabled.")
         self.enabled = True
-        self.collision_manager.add_collider(self)
+        self.add_collider()
 
     def disable(self):
         if not self.enabled:
             raise RuntimeError("Collider is already disabled.")
         self.enabled = False
-        self.collision_manager.remove_collider(self)
+        self.remove_collider()
 
     def set_shape(self, shape):
-        #IMPLENT!!!!
-        pass
-
+        # Ensure shape is a subclass of Shape
+        if not isinstance(shape, Shape):
+            raise TypeError("Shape must be an instance of Shape or its subclasses.")
+        self.shape = shape
 
     def get_shape(self):
         return self.shape
@@ -57,6 +64,33 @@ class Collider(Component):
     def get_transform(self):
         return self.transform
     
+    def get_world_transform(self):
+        node_transform = self.parent.get_world_transform()
+        return np.dot(node_transform, self.transform)
+    
+    def to_dict(self):
+        base = super().to_dict()
+        base.update({
+            "shape": self.shape.to_dict() if self.shape else None,
+            "transform": self.transform.tolist() if self.transform is not None else None,
+            "enabled": self.enabled
+        })
+        return base
+    
+    @classmethod
+    def from_dict(data, scene_manager):
+        shape_data = data.get("shape")
+        collider = Collider(name=data.get("name", "Collider"))
+        collider.enabled = data.get("enabled", True)
+        collider.transform = np.array(data.get("transform", np.identity(4)))
+        shape_type = shape_data.get("type")
+        if shape_type in shape_registry:
+            shape = shape_registry[shape_type].from_dict(shape_data, scene_manager)
+            collider.set_shape(shape)
+        else:
+            raise ValueError(f"Unknown shape type: {shape_type}")
+        
+        return collider
     
 
 
