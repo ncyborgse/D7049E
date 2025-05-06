@@ -1,12 +1,13 @@
-import dearpygui as dpg
+import dearpygui.dearpygui as dpg
 from editor.window.window import Window
 from editor.element.component_element import SceneGraphElement, AddSceneGraphElement
 
 
 class SceneGraphWindow(Window):
-    def __init__(self, name, width=400, height=600):
+    def __init__(self, name, inspector_window, width=400, height=600):
         super().__init__(name, width, height)
         self.selected_scene_graph = None  # Placeholder for the active scene graph
+        self.inspector_window = inspector_window  # Reference to the inspector window
 
     def load_scene_graph(self, scene_graph):
         self.selected_scene_graph = scene_graph
@@ -19,9 +20,15 @@ class SceneGraphWindow(Window):
             for node in self.selected_scene_graph.get_root().get_children():
                 self.add_child(SceneGraphElement(
                     node, 
-                    inspector_callback=self.inspector_window.load_node))
+                    inspector_callback=self.inspector_window.load_node,
+                    refresh_callback=self.refresh_scene_graph_window  # <-- add this
+                ))
             
-            self.add_child(AddSceneGraphElement(self.selected_scene_graph))
+            self.add_child(SceneGraphElement(
+                node, 
+                inspector_callback=self.inspector_window.load_node,
+                refresh_callback=self.refresh_scene_graph_window  # <-- add this
+            ))
 
         if self.is_opened:
             self.unload()

@@ -1,4 +1,4 @@
-import dearpygui as dpg
+import dearpygui.dearpygui as dpg
 import numpy as np
 from editor.element.display_element import DisplayElement
 

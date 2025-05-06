@@ -1,4 +1,4 @@
-import dearpygui as dpg
+import dearpygui.dearpygui as dpg
 from editor.window.window import Window
 from editor.element.component_element import ComponentElement, AddComponentElement
 
