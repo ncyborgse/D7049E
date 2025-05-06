@@ -9,6 +9,11 @@ class Shape(ABC):
         pass
 
     @abstractmethod
+    def init_shape(self):
+        """Initialize the shape."""
+        pass
+
+    @abstractmethod
     def to_dict(self):
         """Convert the shape to a dictionary."""
         pass

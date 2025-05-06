@@ -10,14 +10,14 @@ class Cylinder(Shape):
         super().__init__()
         self.height = height
         self.radius = radius
-        half_extents = [self.width / 2, self.height / 2, self.radius]
+
+    def init_shape(self):
         self.shape_id = p.createCollisionShape(p.GEOM_CYLINDER, radius=self.radius, height=self.height)
         self.body_id = p.createMultiBody(
-            baseMass = 1,
+            baseMass = 1.0,
             baseCollisionShapeIndex = self.shape_id,
             basePosition = [0, 0, 0],
         )
-
 
     def get_type(self):
         return "Cylineder"
@@ -30,6 +30,8 @@ class Cylinder(Shape):
         }
     
     def get_id(self):
+        if not hasattr(self, 'body_id'):
+            raise ValueError("Shape has not been initialized. Call init_shape() first.")
         return self.body_id
     
     @classmethod

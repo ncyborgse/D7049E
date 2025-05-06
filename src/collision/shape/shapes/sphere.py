@@ -9,13 +9,14 @@ class Sphere(Shape):
         super().__init__()
         self.radius = radius
         self.shape_id = p.createCollisionShape(p.GEOM_SPHERE, radius=self.radius)
+
+
+    def init_shape(self):
         self.body_id = p.createMultiBody(
             baseMass = 1.0,
             baseCollisionShapeIndex = self.shape_id,
             basePosition = [0, 0, 0],
         )
-
-
 
     def get_type(self):
         return "Sphere"
@@ -27,6 +28,8 @@ class Sphere(Shape):
         }
     
     def get_id(self):
+        if not hasattr(self, 'body_id'):
+            raise ValueError("Shape has not been initialized. Call init_shape() first.")
         return self.body_id
     
     @classmethod

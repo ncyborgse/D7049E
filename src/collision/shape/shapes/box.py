@@ -10,10 +10,12 @@ class Box(Shape):
         self.width = width
         self.height = height
         self.depth = depth
+
+    def init_shape(self):
         half_extents = [self.width / 2, self.height / 2, 0.1]
         self.shape_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=half_extents)
         self.body_id = p.createMultiBody(
-            baseMass = 1,
+            baseMass = 1.0,
             baseCollisionShapeIndex = self.shape_id,
             basePosition = [0, 0, 0],
         )
@@ -30,6 +32,8 @@ class Box(Shape):
         }
     
     def get_id(self):
+        if not hasattr(self, 'body_id'):
+            raise ValueError("Shape has not been initialized. Call init_shape() first.")
         return self.body_id
 
     

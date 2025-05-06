@@ -22,6 +22,7 @@ class CollisionManager:
                 collider = current_node.get_component("Collider")
                 if collider:
                     collider.register_collision_manager(self)
+                    collider.get_shape().init_shape()  # Initialize the shape
                     self.colliders.append(collider)
 
                 # Add children to the list for further checking
