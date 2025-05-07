@@ -83,6 +83,7 @@ class Script(Component):
 
         # Add engine API to Lua environment
 
+        self.source = source
         self.engine_api = engine_api
 
         # Read script file and subscribe to events
@@ -138,7 +139,7 @@ class Script(Component):
         return base
 
     @classmethod
-    def from_dict(self, data, scene_manager):
+    def from_dict(cls, data, scene_manager):
         engine_api = {
             "SceneManager" : {
                 "load_scene" : scene_manager.load_scene,

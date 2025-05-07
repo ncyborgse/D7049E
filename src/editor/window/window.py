@@ -37,6 +37,19 @@ class Window(ABC):
     def draw_self(self):
         pass
 
+    '''
+    @abstractmethod
+    def on_frame(self):
+        pass
+
+    def frame(self):
+        if self.is_opened:
+            for child in self.children:
+                child.frame()
+            self.on_frame()
+        else:
+            print(f"Window '{self.name}' is not loaded.")
+    '''
     def unload(self):
         if self.is_opened:
             dpg.hide_item(self.name)

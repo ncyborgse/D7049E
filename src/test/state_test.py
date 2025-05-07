@@ -9,9 +9,21 @@ import numpy as np
 from pyee import EventEmitter
 
 
+
+
 def create_prefabs():
 
+
     scene_manager = SceneManager()
+
+    engine_api = {
+        "SceneManager" : {
+            "load_scene" : scene_manager.load_scene,
+            "get_current_scene" : scene_manager.get_current_scene,
+            "get_scenes" : scene_manager.get_scenes,
+        }   
+    }
+
     state_manager = StateManager()
     state_manager.set_scene_manager(scene_manager)
     state_manager.new_project("Proj1")
@@ -34,8 +46,7 @@ def create_prefabs():
     script1 = Script("Script1")
     scriptSrc = "src/test/testScript.lua"
 
-    script1.attach_script(scriptSrc)
-    script1.on_runtime_init(scene_manager)
+    script1.attach_script(scriptSrc, engine_api)
     script1.subscribe(emitter)
 
     node1 = Node("Node1", transform = np.identity(4), parent=None)
@@ -65,8 +76,8 @@ def load_and_run():
     
     event_emitter.emit("onStart")
 
-#create_prefabs()
-load_and_run()
+create_prefabs()
+#load_and_run()
 
     
     
