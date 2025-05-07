@@ -1,6 +1,9 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))    # Fix the import path
+BASE_DIR = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(BASE_DIR, '../../../')))    # Fix the import path
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "..", ".."))
+DEFAULT_MODEL_PATH = os.path.join(PROJECT_ROOT, "assets", "models", "banana duck.obj")
 
 import numpy as np
 from pywavefront import Wavefront
@@ -10,9 +13,9 @@ from core.component_registry import register_component
 
 @register_component
 class MeshRenderer(Component):
-    def __init__(self, ctx, obj_path: str, name="MeshRenderer"):
+    def __init__(self, ctx, obj_path=DEFAULT_MODEL_PATH, name="MeshRenderer"):
         super().__init__(name=name)
-        self.enabled = False
+        self.enabled = True
 
         self.ctx = ctx
         self.scene = Wavefront(obj_path, collect_faces=True)
@@ -107,11 +110,15 @@ class MeshRenderer(Component):
         # Ensure transform is a 4x4 matrix
         if transform.shape != (4, 4):
             raise ValueError("Transform must be a 4x4 matrix.")
-        self.transform = transform
+
+        if self.get_parent():
+            self.transform = np.dot(self.get_parent().transform, transform)
+        else:
+            self.transform = transform
 
     def render(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0)):
         mvp = np.dot( np.dot(projection_matrix, view_matrix), self.transform )
-        self.program['mvp'].write(mvp.astype('f4').tobytes())
+        self.program['mvp'].write(mvp.T.astype('f4').tobytes())
         self.program['model'].write(self.transform.astype('f4').tobytes())
         self.program['light_dir'].value = light_dir
         self.vao.render()
