@@ -1,6 +1,9 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))    # Fix the import path
+BASE_DIR = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(BASE_DIR, '../../../')))    # Fix the import path
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "..", ".."))
+DEFAULT_MODEL_PATH = os.path.join(PROJECT_ROOT, "assets", "models", "banana duck.obj")
 
 import numpy as np
 from pywavefront import Wavefront
@@ -10,7 +13,7 @@ from core.component_registry import register_component
 
 @register_component
 class MeshRenderer(Component):
-    def __init__(self, ctx, obj_path: str, name="MeshRenderer"):
+    def __init__(self, ctx, obj_path=DEFAULT_MODEL_PATH, name="MeshRenderer"):
         super().__init__(name=name)
         self.enabled = True
 

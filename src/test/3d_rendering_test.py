@@ -39,7 +39,7 @@ node2 = Node("Node2", parent=node1)
 
 # Create mesh renderers and add them to the nodes
 mesh1 = MeshRenderer(ctx, "../../assets/models/Trollboyobj.obj")
-mesh2 = MeshRenderer(ctx, "../../assets/models/banana duck.obj")
+mesh2 = MeshRenderer(ctx) #"../../assets/models/banana duck.obj")
 node1.add_component(mesh1)
 node2.add_component(mesh2)
 
@@ -74,19 +74,10 @@ def on_draw():
     ctx.clear(0.1, 0.1, 0.1)
 
     # Create view and projection matrices
-
-    view = render_manager.look_at( (5.0, 7.0, 6.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
-    #view = Matrix44.look_at(
-    #    eye=(5.0, 7.0, 6.0),
-    #    target=(0.0, 0.0, 0.0),
-    #    up=(0.0, 1.0, 0.0)
-    #)
-
+    view = render_manager.look_at( (5.0, 7.0, 6.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0) )
     proj = render_manager.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
-    #proj = Matrix44.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
 
-    # Render all meshes
-    render_manager.render_all(view, proj, light_dir=(1.0, 1.0, 1.0))
+    render_manager.render_all(view, proj, light_dir=(1.0, 1.0, 1.0))    # render all meshes in the render manager
 
 # Run the application
 pyglet.app.run()
