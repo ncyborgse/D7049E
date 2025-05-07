@@ -2,13 +2,15 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))    # Fix the import path
 
+import time
 import numpy as np #from pyrr import Matrix44
 from scene.component.components.mesh_renderer import MeshRenderer
 
 
 class RenderManager:
-    def __init__(self, scene_manager):
+    def __init__(self, scene_manager, game_manager=None):
         self.scene_manager = scene_manager
+        self.game_manager = game_manager
         self.meshes = []
 
 
@@ -20,12 +22,6 @@ class RenderManager:
             self.meshes.remove(mesh_renderer)
         else:
             raise ValueError("MeshRenderer not found in RenderManager.")
-
-
-    def render_all(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0)):
-        for mesh in self.meshes:
-            if mesh.enabled:
-                mesh.render(view_matrix, projection_matrix, light_dir)
 
 
     def register_mesh_renderers(self):
@@ -74,3 +70,41 @@ class RenderManager:
         view[2, :3] = -f
         view[:3, 3] = -np.dot(view[:3, :3], eye)
         return view
+
+
+    def render_all(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0), delta_time=None):
+        for mesh in self.meshes:
+            mesh.render(view_matrix, projection_matrix, light_dir)
+
+
+    def run(self):
+        # Main loop for the render manager
+        self.is_running = True
+        previous_time = time.time()
+
+        WINDOW_WIDTH = 800
+        WINDOW_HEIGHT = 600
+        proj = self.perspective_projection(45.0, WINDOW_WIDTH / WINDOW_HEIGHT, 0.1, 100.0)
+
+        while self.is_running:
+            current_time = time.time()
+            delta_time = current_time - previous_time
+            previous_time = current_time
+
+            camera = self.scene_manager.get_current_camera()
+            if camera is None:
+                raise ValueError("Camera not found in GameManager.")
+
+            eye = camera.get_eye()
+            target = camera.get_target()
+            up = camera.get_up()
+
+            view = self.look_at(eye, target, up)
+
+            self.render_all(view, proj)
+
+            # Sleep for a short duration to limit the frame rate
+            time.sleep(1.0 / 60)    # frame_rate = 60
+
+    def stop(self):
+        self.is_running = False
