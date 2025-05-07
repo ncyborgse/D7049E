@@ -56,8 +56,12 @@ node1.add_component(mesh_renderer)
 node2 = Node("Node2", transform = np.identity(4))
 node2.add_component(collider2)
 
-camera = 
+camera = Camera()
+node3 = Node("Camera", transform = np.identity(4))
+node3.add_component(camera)
+
 scene_graph.add_node(node1)
 scene_graph.add_node(node2)
+scene_graph.add_node(node3)
 
 game_manager = GameManager()
