@@ -1,7 +1,8 @@
 import time
 
 class Engine:
-    def __init__(self, scene_manager):
+    def __init__(self, scene_manager, frame_rate=60):
+        self.frame_rate = frame_rate
         self.scene_manager = scene_manager
         self.is_running = False
 
@@ -41,7 +42,7 @@ class Engine:
                 raise RuntimeError("No scene graph loaded.")
             
             # Sleep for a short duration to limit the frame rate
-            time.sleep(0.016)
+            time.sleep(1.0 / self.frame_rate)
 
 
     def stop(self):

@@ -14,6 +14,12 @@ class DisplayElement(ABC):
         else:
             raise TypeError("Child must be an instance of a display element.")
         
+    def set_parent(self, parent):
+        self.parent = parent
+
+    def get_parent(self):
+        return self.parent
+    
     def remove_child(self, child):
         if child in self.children:
             self.children.remove(child)

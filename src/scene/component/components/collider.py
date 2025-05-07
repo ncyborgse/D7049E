@@ -4,6 +4,7 @@ from scene.component.component import Component
 from collision.collision_manager import CollisionManager
 from collision.shape.shape import Shape
 import numpy as np
+import threading
 
 @register_component
 class Collider(Component):
@@ -12,71 +13,83 @@ class Collider(Component):
         self.shape = None
         self.transform = None
         self.enabled = True
+        self.lock = threading.Lock()
 
     def register_collision_manager(self, collision_manager):
-        self.collision_manager = collision_manager
+        with self.lock:
+            self.collision_manager = collision_manager
 
     def subscribe(self, event_emitter):
-        # On spawn, add the collider to the collision manager
-        event_emitter.on("onSpawn", self.add_collider)
-        # On destroy, remove the collider from the collision manager
-        event_emitter.on("onDestroy", self.remove_collider)
+        with self.lock:
+            # On spawn, add the collider to the collision manager
+            event_emitter.on("onSpawn", self.add_collider)
+            # On destroy, remove the collider from the collision manager
+            event_emitter.on("onDestroy", self.remove_collider)
         
 
     def add_collider(self):
-        # Check if the collider is enabled before adding it to the collision manager
-        if self.enabled and self.collision_manager:
-            self.collision_manager.add_collider(self)
+        with self.lock:
+            # Check if the collider is enabled before adding it to the collision manager
+            if self.enabled and self.collision_manager:
+                self.collision_manager.add_collider(self)
             
             
     def remove_collider(self):
-        if self.enabled and self.collision_manager:
-            self.collision_manager.remove_collider(self)    
+        with self.lock:
+            if self.enabled and self.collision_manager:
+                self.collision_manager.remove_collider(self)    
 
     def enable(self):
-        if self.enabled:
-            raise RuntimeError("Collider is already enabled.")
-        self.enabled = True
-        self.add_collider()
+        with self.lock:
+            if self.enabled:
+                raise RuntimeError("Collider is already enabled.")
+            self.enabled = True
+            self.add_collider()
 
     def disable(self):
-        if not self.enabled:
-            raise RuntimeError("Collider is already disabled.")
-        self.enabled = False
-        self.remove_collider()
+        with self.lock:
+            if not self.enabled:
+                raise RuntimeError("Collider is already disabled.")
+            self.enabled = False
+            self.remove_collider()
 
     def set_shape(self, shape):
-        # Ensure shape is a subclass of Shape
-        if not isinstance(shape, Shape):
-            raise TypeError("Shape must be an instance of Shape or its subclasses.")
-        self.shape = shape
+        with self.lock:
+            # Ensure shape is a subclass of Shape
+            if not isinstance(shape, Shape):
+                raise TypeError("Shape must be an instance of Shape or its subclasses.")
+            self.shape = shape
 
     def get_shape(self):
-        return self.shape
+        with self.lock:
+            return self.shape
     
     def set_transform(self, transform):
-        # Ensure transform is a 4x4 matrix
-        if transform.shape != (4, 4):
-            raise ValueError("Transform must be a 4x4 matrix.")
-        self.transform = transform
+        with self.lock:
+            # Ensure transform is a 4x4 matrix
+            if transform.shape != (4, 4):
+                raise ValueError("Transform must be a 4x4 matrix.")
+            self.transform = transform
 
 
     def get_transform(self):
-        return self.transform
+        with self.lock:
+            return self.transform
     
     def get_world_transform(self):
-        
-        node_transform = self.get_parent().get_world_transform()
-        return np.dot(node_transform, self.transform)
+        with self.lock:
+            node_transform = self.get_parent().get_world_transform()
+            return np.dot(node_transform, self.transform)
     
     def to_dict(self):
-        base = super().to_dict()
-        base.update({
-            "shape": self.shape.to_dict() if self.shape else None,
-            "transform": self.transform.tolist() if self.transform is not None else None,
-            "enabled": self.enabled
-        })
-        return base
+        with self.lock:
+            base = super().to_dict()
+            base.update({
+                "shape": self.shape.to_dict() if self.shape else None,
+                "transform": self.transform.tolist() if self.transform is not None else None,
+                "enabled": self.enabled
+            })
+            return base
     
     @classmethod
     def from_dict(data, scene_manager):

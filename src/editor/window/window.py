@@ -9,14 +9,25 @@ class Window(ABC):
         self.height = height
         self.is_opened = False
         self.children = []
+        self.parent = None
     
     def add_child(self, child):
         if isinstance(child, DisplayElement) or isinstance(child, Window):
             if child in self.children:
                 raise ValueError("Component already exists in the window.")
             self.children.append(child)
+            child.set_parent(self)
         else:
             raise TypeError("Component must be an instance of DisplayElement or Window.")
+
+    def get_parent(self):
+        return self.parent
+
+    def set_parent(self, parent):
+        self.parent = parent
+
+    
+    
 
     def load(self):
         if not self.is_opened:

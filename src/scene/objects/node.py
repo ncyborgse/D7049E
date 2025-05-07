@@ -1,6 +1,7 @@
 import numpy as np
 from core.component_registry import component_registry
 import pyee
+import threading
 
 class Node:
     def __init__(self, name, transform=np.identity(4), parent=None):
@@ -12,105 +13,135 @@ class Node:
         self.event_emitter = pyee.EventEmitter()
         if parent:
             parent.add_child(self)
+        self.lock = threading.Lock()
 
 
     def attach(self, parent_node):
-        if self.parent:
-            self.parent.remove_child(self)
-        parent_node.add_child(self)
-        self.parent = parent_node
+        with self.lock:
+            if self.parent:
+                self.parent.remove_child(self)
+            parent_node.add_child(self)
+            self.parent = parent_node
 
     def get_name(self):
-        return self.name
-
-    def get_event_emitter(self):
-        return self.event_emitter
+        with self.lock:
+            return self.name
 
     def call_event(self, event, *args, **kwargs):
-        self.event_emitter.emit(event, *args, **kwargs)
+        with self.lock:
+            self.event_emitter.emit(event, *args, **kwargs)
 
     def call_event_rec(self, event, *args, **kwargs):
-        self.call_event(event, *args, **kwargs)
-        for child in self.children:
-            child.call_event_rec(event, *args, **kwargs)
+        with self.lock:
+            self.call_event(event, *args, **kwargs)
+            for child in self.children:
+                child.call_event_rec(event, *args, **kwargs)
 
     def subscribe_children_rec(self):
-        for component in self.components:
-            component.subscribe(self.event_emitter)
-        for child in self.children:
-            child.subscribe_children_rec()
+        with self.lock:
+            self.subscribe_components()
+            for child in self.children:
+                child.subscribe_children_rec()
+
+    def subscribe_components(self):
+        with self.lock:
+            for component in self.components:
+                component.subscribe(self.event_emitter)
 
     def rename(self, new_name):
-        self.name = new_name
+        with self.lock:
+            self.name = new_name
 
 
     # Child management
 
     def add_child(self, child_node):
-        self.children.append(child_node)
-        child_node.parent = self
+        with self.lock:
+            self.children.append(child_node)
+            child_node.parent = self
 
     def remove_child(self, child_node):
-        if child_node in self.children:
-            self.children.remove(child_node)
-            child_node.parent = None
+        with self.lock:
+            if child_node in self.children:
+                self.children.remove(child_node)
+                child_node.parent = None
 
     def get_children(self):
-        return self.children
+        with self.lock:
+            return self.children
     
     def get_parent(self):
-        return self.parent
+        with self.lock:
+            return self.parent
 
 
     # Component management
 
     def add_component(self, component):
-        self.components.append(component)
-        component.attach(self)
+        with self.lock:
+            if not isinstance(component, component_registry.get(component.get_name())):
+                raise TypeError(f"Component must be an instance of registered component type.")
+            if component in self.components:
+                raise ValueError("Component already added to this node.")
+            self.components.append(component)
+            component.attach(self)
 
     def remove_component(self, component):
-        if component in self.components:
-            self.components.remove(component)
+        with self.lock:
+            if component in self.components:
+                self.components.remove(component)
+            if component.get_parent() != self:
+                raise ValueError("Component is not attached to this node.")
+            component.unsubscribe_all(self.event_emitter)
+            component.parent = None
+
 
     def get_components(self):
-        return self.components
+        with self.lock:
+            return self.components
     
     def get_component(self, name):
-        for component in self.components:
-            if component.get_name() == name:
-                return component
-        return None
+        with self.lock:
+            for component in self.components:
+                if component.get_name() == name:
+                    return component
+            return None
 
 
     # Transform management
 
     def get_world_transform(self):
-        if self.parent:
-            return np.dot(self.parent.get_world_transform(), self.transform)
-        else:
-            return self.transform
+        with self.lock:
+            if self.parent:
+                return np.dot(self.parent.get_world_transform(), self.transform)
+            else:
+                return self.transform
 
     def get_local_transform(self):
-        return self.transform
+        with self.lock:
+            return self.transform
     
     def set_local_transform(self, transform):
-        if transform.shape != (4, 4):
-            raise ValueError("Transform must be a 4x4 matrix.")
-        self.transform = transform
+        with self.lock:
+            if transform.shape != (4, 4):
+                raise ValueError("Transform must be a 4x4 matrix.")
+            self.transform = transform
 
     def apply_transform(self, transform):
-        if transform.shape != (4, 4):
-            raise ValueError("Transform must be a 4x4 matrix.")
-        self.transform = np.dot(self.transform, transform)
+        with self.lock:
+            if transform.shape != (4, 4):
+                raise ValueError("Transform must be a 4x4 matrix.")
+            self.transform = np.dot(self.transform, transform)
     # Prefab support
 
     def to_dict(self):
-        return {
-            "name": self.name,
-            "transform": self.transform.tolist(),  # Convert numpy array to list for JSON serialization
-            "children": [child.to_dict() for child in self.children],
-            "components": [component.to_dict() for component in self.components]
-        }
+        with self.lock:
+            return {
+                "name": self.name,
+                "transform": self.transform.tolist(),  # Convert numpy array to list for JSON serialization
+                "children": [child.to_dict() for child in self.children],
+                "components": [component.to_dict() for component in self.components]
+            }
 
     @classmethod
     def from_dict(cls, data, scene_manager):

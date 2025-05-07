@@ -17,7 +17,6 @@ def load_components():
             importlib.import_module("scene.component.components." + file[:-3])
 
 def register_component(component_class):
-    print(f"Registering component: {component_class.__name__}")
     component_registry[component_class.__name__] = component_class
     return component_class
 

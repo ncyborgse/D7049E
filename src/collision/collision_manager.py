@@ -1,14 +1,18 @@
 import pybullet as p
 from scipy.spatial.transform import Rotation as R
+import time
 
 
 class CollisionManager:
-    def __init__(self, scene_manager):
+    def __init__(self, scene_manager, frame_rate=60):
         self.colliders = []
         self.scene_manager = scene_manager
         self.prev_collisions = []
         self.physics_client = p.connect(p.DIRECT)  # Connect to PyBullet in DIRECT mode
         p.setGravity(0, 0, 0)  # Set gravity for the simulation
+        self.is_running = False
+        self.frame_rate = frame_rate  # Set the desired frame rate
+        p.setTimeStep(1.0 / self.frame_rate)  # Set the time step for the simulation
 
 
 
@@ -29,10 +33,10 @@ class CollisionManager:
                 for child in current_node.get_children():
                     nodes_to_check.append(child)
 
-    def check_collisions(self):        
+    def check_collisions(self, delta_time=None):        
 
         collision_map = {}
-        p.stepSimulation(physicsClientId=self.physics_client)  # Step the simulation to update positions
+        p.stepSimulation(physicsClientId=self.physics_client, )  # Step the simulation to update positions
 
     
 
@@ -54,16 +58,10 @@ class CollisionManager:
             quaternion = R.from_matrix(rotation_matrix).as_quat()
             p.resetBasePositionAndOrientation(id, transform[:3, 3], quaternion)
 
-
-
         ids = list(collision_map.keys())
 
         # Perform collision detection
         collision_pairs = p.getContactPoints()
-
-
-
-
         
         # Separate collisions into new, ongoing, and ending collisions
 
@@ -100,6 +98,25 @@ class CollisionManager:
             if collision_data["ending"]:
                 node.call_event("exit", collision_data["ending"])
 
+    def run(self):
+        # Main loop for the collision manager
+        while True:
+            self.is_running = True
+            previous_time = time.time()
+
+            while self.is_running:
+                current_time = time.time()
+                delta_time = current_time - previous_time
+                previous_time = current_time
+
+                self.check_collisions()
+
+                # Sleep for a short duration to limit the frame rate
+                time.sleep(1.0 / self.frame_rate)
+
+    def stop(self):
+        self.is_running = False
+        p.disconnect(self.physics_client)
 
 
                 

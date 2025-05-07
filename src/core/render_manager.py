@@ -7,7 +7,8 @@ from scene.component.components.mesh_renderer import MeshRenderer
 
 
 class RenderManager:
-    def __init__(self):
+    def __init__(self, scene_manager):
+        self.scene_manager = scene_manager
         self.meshes = []
 
 
@@ -23,8 +24,24 @@ class RenderManager:
 
     def render_all(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0)):
         for mesh in self.meshes:
-            mesh.render(view_matrix, projection_matrix, light_dir)
+            if mesh.enabled:
+                mesh.render(view_matrix, projection_matrix, light_dir)
 
+
+    def register_mesh_renderers(self):
+        for scene in self.scene_manager.get_scenes():
+            root = scene.get_root()
+            nodes_to_check = [root]
+
+            while nodes_to_check:
+                current_node = nodes_to_check.pop()
+                mesh = current_node.get_component("MeshRenderer")
+                if mesh:
+                    self.add_mesh(mesh)
+
+                # Add children to the list for further checking
+                for child in current_node.get_children():
+                    nodes_to_check.append(child)
 
 
     def perspective_projection(self, fov_deg, aspect, near, far):
