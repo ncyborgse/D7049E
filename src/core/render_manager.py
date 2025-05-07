@@ -82,6 +82,8 @@ class RenderManager:
 
     def render_all(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0), delta_time=None):
         for mesh in self.meshes:
+            if mesh.not_created:
+                mesh.create(self.ctx)
             mesh.render(view_matrix, projection_matrix, light_dir)
 
 

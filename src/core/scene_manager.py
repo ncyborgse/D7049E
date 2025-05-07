@@ -27,8 +27,8 @@ class SceneManager:
 
     def get_current_cameras(self):
         with self.lock:
-            return self.current_camera
-        
+            return self.current_cameras
+
     def set_current_scene(self, scene):
         with self.lock:
             if scene in self.scenes:
