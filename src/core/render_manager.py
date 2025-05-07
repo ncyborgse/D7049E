@@ -97,6 +97,8 @@ class RenderManager:
 
             cameras = self.scene_manager.get_current_cameras()
 
+            print(cameras)
+
             if len(cameras) == 1:
                 camera = cameras[0]
             elif len(cameras) > 1:
