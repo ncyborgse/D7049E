@@ -18,6 +18,7 @@ class MeshRenderer(Component):
         super().__init__(name=name)
         self.obj_path = obj_path
         self.enabled = False
+        self.not_created = True
         self.transform = np.identity(4)
         self.lock = threading.Lock()
 
