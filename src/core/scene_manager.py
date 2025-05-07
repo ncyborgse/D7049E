@@ -5,6 +5,7 @@ class SceneManager:
     def __init__(self):
         self.scenes = []
         self.current_scene_index = None
+        self.current_camera = None
         self.lock = threading.Lock()
 
     def add_scene(self, scene):
@@ -13,19 +14,22 @@ class SceneManager:
                 self.scenes.append(scene)
                 if self.current_scene_index is None:
                     self.current_scene_index = 0
-    
+
+    def get_scenes(self):
+        with self.lock:
+            if self.current_scene_index is not None:
+                return self.scenes[self.current_scene_index]
+
     def get_current_scene(self):
         with self.lock:
             if self.current_scene_index is not None:
                 return self.scenes[self.current_scene_index]
             return None
 
-    
-    def get_scenes(self):
+    def get_current_camera(self):
         with self.lock:
-            if self.current_scene_index is not None:
-                return self.scenes[self.current_scene_index]
-            
+            return self.current_camera
+
     def remove_scene(self, index):
         with self.lock:
             if 0 <= index < len(self.scenes):
@@ -35,12 +39,36 @@ class SceneManager:
             else:
                 raise IndexError("Scene index out of range.")
 
-
     def load_scene(self, scene_name):
         with self.lock:
             for index, scene in enumerate(self.scenes):
                 print(scene.get_name())
                 if scene.get_name() == scene_name:
                     self.current_scene_index = index
+
+
+                    # Look for the current camera in the scene
+
+                    root = scene.get_root()
+                    nodes_to_check = [root]
+                    list_of_cameras = []
+
+                    while nodes_to_check:
+                        current_node = nodes_to_check.pop()
+                        camera = current_node.get_component("Camera")
+                        if camera:
+                            list_of_cameras.append(camera)
+
+                        # Add children to the list for further checking
+                        for child in current_node.get_children():
+                            nodes_to_check.append(child)
+
+                        if len(list_of_cameras) == 1:
+                            self.current_camera = list_of_cameras[0]
+                        elif len(list_of_cameras) > 1:
+                            raise ValueError("Multiple cameras found in the scene. Please ensure only one camera is present.")
+                        else:
+                            raise ValueError("No camera found in the scene. Please add a camera to the scene.")
+
                     return scene
             raise ValueError(f"Scene '{scene_name}' not found.")

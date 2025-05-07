@@ -77,7 +77,7 @@ def on_draw():
     view = render_manager.look_at( (5.0, 7.0, 6.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0) )
     proj = render_manager.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
 
-    render_manager.render_all(view, proj, light_dir=(1.0, 1.0, 1.0))    # render all meshes in the render manager
+    render_manager.render_all(view, proj)    # render all meshes in the render manager
 
 # Run the application
 pyglet.app.run()

@@ -2,6 +2,7 @@ from core.scene_manager import SceneManager
 from core.state_manager import StateManager
 from editor.display_manager import DisplayManager
 from editor.window.project_selection_window import ProjectSelectionWindow
+import sys
 
 
 def main():
@@ -26,3 +27,6 @@ def main():
 
         manager.load_gui()
 
+
+if sys.version_info[:3] != (3, 11, 0):
+    sys.exit("This project requires Python 3.11.0")

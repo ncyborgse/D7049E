@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(BASE_DIR, '../../../')))    # Fix t
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "..", ".."))
 DEFAULT_MODEL_PATH = os.path.join(PROJECT_ROOT, "assets", "models", "banana duck.obj")
 
+import threading
 import numpy as np
 from pywavefront import Wavefront
 from scene.component.component import Component
@@ -24,27 +25,39 @@ class MeshRenderer(Component):
         self.program = self._create_shader_program()
         self.vao = self.ctx.vertex_array(self.program, [(self.vbo, '3f 3f', 'in_vert', 'in_normal')])
         self.transform = np.identity(4)
+        self.lock = threading.Lock()
 
 
     def subscribe(self, event_emitter):
-        # On spawn, enable the mesh renderer
-        event_emitter.on("onSpawn", self.enable)
-        # On destroy, disable the mesh renderer
-        event_emitter.on("onDestroy", self.disable)
+        with self.lock:
+            # On spawn, enable the mesh renderer
+            event_emitter.on("onSpawn", self.enable)
+            # On destroy, disable the mesh renderer
+            event_emitter.on("onDestroy", self.disable)
 
 
     def enable(self):
-        if self.enabled:
-            raise RuntimeError("Mesh Renderer is already enabled.")
-        self.enabled = True
-        #self.render_manager.add_mesh(self)
+        with self.lock:
+            if self.enabled:
+                raise RuntimeError("Mesh Renderer is already enabled.")
+            self.enabled = True
 
     def disable(self):
-        if not self.enabled:
-            raise RuntimeError("Collider is already disabled.")
-        self.enabled = False
-        #self.render_manager.remove_mesh(self)
+        with self.lock:
+            if not self.enabled:
+                raise RuntimeError("Collider is already disabled.")
+            self.enabled = False
 
+    def set_transform(self, transform):
+        # Ensure transform is a 4x4 matrix
+        if transform.shape != (4, 4):
+            raise ValueError("Transform must be a 4x4 matrix.")
+
+        with self.lock:
+            if self.get_parent():
+                self.transform = np.dot(self.get_parent().transform, transform)
+            else:
+                self.transform = transform
 
     def _prepare_vertex_data(self):
         vertex_list = self.scene.vertices
@@ -106,27 +119,21 @@ class MeshRenderer(Component):
             '''
         )
 
-    def set_transform(self, transform):
-        # Ensure transform is a 4x4 matrix
-        if transform.shape != (4, 4):
-            raise ValueError("Transform must be a 4x4 matrix.")
-
-        if self.get_parent():
-            self.transform = np.dot(self.get_parent().transform, transform)
-        else:
-            self.transform = transform
-
     def render(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0)):
-        mvp = np.dot( np.dot(projection_matrix, view_matrix), self.transform )
-        self.program['mvp'].write(mvp.T.astype('f4').tobytes())
-        self.program['model'].write(self.transform.astype('f4').tobytes())
-        self.program['light_dir'].value = light_dir
-        self.vao.render()
+        with self.lock:
+            if not self.enabled:
+                return
+            mvp = np.dot( np.dot(projection_matrix, view_matrix), self.transform )
+            self.program['mvp'].write(mvp.T.astype('f4').tobytes())
+            self.program['model'].write(self.transform.astype('f4').tobytes())
+            self.program['light_dir'].value = light_dir
+            self.vao.render()
 
     def to_dict(self):
-        base = super().to_dict()
-        # Update base
-        return base
+        with self.lock:
+            base = super().to_dict()
+            # Update base
+            return base
 
     @classmethod
     def from_dict(self, data, scene_manager):

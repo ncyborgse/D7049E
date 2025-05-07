@@ -1,1 +1,2 @@
-#run source
+def main():
+    pass

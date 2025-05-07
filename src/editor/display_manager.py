@@ -11,7 +11,6 @@ class DisplayManager:
         dpg.setup_dearpygui()
         dpg.show_viewport()
 
-
     def load_gui(self):
         dpg.start_dearpygui()
         dpg.destroy_context()
