@@ -18,12 +18,15 @@ class DisplayManager:
 
     def add_window(self, window):
         self.windows.append(window)
+        window.set_parent(self)
 
     def remove_window(self, window_name):
         for window in self.windows:
             if window.name == window_name:
                 self.windows.remove(window)
+                
                 break
+
         else:
             print(f"Window '{window_name}' not found.")
 

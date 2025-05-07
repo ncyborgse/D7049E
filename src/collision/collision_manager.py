@@ -54,16 +54,10 @@ class CollisionManager:
             quaternion = R.from_matrix(rotation_matrix).as_quat()
             p.resetBasePositionAndOrientation(id, transform[:3, 3], quaternion)
 
-
-
         ids = list(collision_map.keys())
 
         # Perform collision detection
         collision_pairs = p.getContactPoints()
-
-
-
-
         
         # Separate collisions into new, ongoing, and ending collisions
 

@@ -19,7 +19,6 @@ def load_components():
 
 
 def register_component(component_class):
-    print(f"Registering component: {component_class.__name__}")
     component_registry[component_class.__name__] = component_class
     return component_class
 
