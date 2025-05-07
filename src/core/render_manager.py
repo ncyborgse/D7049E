@@ -8,7 +8,7 @@ from scene.component.components.mesh_renderer import MeshRenderer
 
 
 class RenderManager:
-    def __init__(self, scene_manager, game_manager):
+    def __init__(self, scene_manager, game_manager=None):
         self.scene_manager = scene_manager
         self.game_manager = game_manager
         self.meshes = []
@@ -82,12 +82,16 @@ class RenderManager:
         self.is_running = True
         previous_time = time.time()
 
+        WINDOW_WIDTH = 800
+        WINDOW_HEIGHT = 600
+        proj = self.perspective_projection(45.0, WINDOW_WIDTH / WINDOW_HEIGHT, 0.1, 100.0)
+
         while self.is_running:
             current_time = time.time()
             delta_time = current_time - previous_time
             previous_time = current_time
 
-            camera = self.game_manager.get_camera()
+            camera = self.scene_manager.get_current_camera()
             if camera is None:
                 raise ValueError("Camera not found in GameManager.")
 
@@ -95,12 +99,7 @@ class RenderManager:
             target = camera.get_target()
             up = camera.get_up()
 
-            window = self.game_manager.get_window()
-            if window is None:
-                raise ValueError("Window not found in GameManager.")
-
             view = self.look_at(eye, target, up)
-            proj = self.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
 
             self.render_all(view, proj)
 
