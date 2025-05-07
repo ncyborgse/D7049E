@@ -28,7 +28,14 @@ class SceneManager:
 
     def get_current_cameras(self):
         with self.lock:
-            return self.current_cameras
+            return self.current_camera
+        
+    def set_current_scene(self, scene):
+        with self.lock:
+            if scene in self.scenes:
+                self.current_scene_index = self.scenes.index(scene)
+            else:
+                raise ValueError("Scene not found in scene list.")
 
     def remove_scene(self, index):
         with self.lock:
