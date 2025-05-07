@@ -100,19 +100,14 @@ class CollisionManager:
 
     def run(self):
         # Main loop for the collision manager
-        while True:
-            self.is_running = True
-            previous_time = time.time()
+        self.is_running = True
 
-            while self.is_running:
-                current_time = time.time()
-                delta_time = current_time - previous_time
-                previous_time = current_time
+        while self.is_running:
 
-                self.check_collisions()
+            self.check_collisions()
 
-                # Sleep for a short duration to limit the frame rate
-                time.sleep(1.0 / self.frame_rate)
+            # Sleep for a short duration to limit the frame rate
+            time.sleep(1.0 / self.frame_rate)
 
     def stop(self):
         self.is_running = False

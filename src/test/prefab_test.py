@@ -30,7 +30,6 @@ def create_prefabs():
     scriptSrc = "src/test/testScript.lua"
 
     script1.attach_script(scriptSrc)
-    script1.on_runtime_init(scene_manager)
     script1.subscribe(emitter)
 
     node1 = Node("Node1", transform = np.identity(4), parent=None)
