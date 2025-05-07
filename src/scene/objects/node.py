@@ -13,7 +13,7 @@ class Node:
         self.event_emitter = pyee.EventEmitter()
         if parent:
             parent.add_child(self)
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
 
     def attach(self, parent_node):
@@ -79,8 +79,6 @@ class Node:
 
     def add_component(self, component):
         with self.lock:
-            if not isinstance(component, component_registry.get(component.get_name())):
-                raise TypeError(f"Component must be an instance of registered component type.")
             if component in self.components:
                 raise ValueError("Component already added to this node.")
             self.components.append(component)

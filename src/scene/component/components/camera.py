@@ -13,7 +13,7 @@ class Camera(Component):
         self.target = [0.0, 0.0, -1.0]
         self.up = [0.0, 1.0, 0.0]
 
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
 
     def get_eye(self):

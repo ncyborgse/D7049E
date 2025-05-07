@@ -27,7 +27,7 @@ class Script(Component):
         self.public_vars = None
         self.public_functions = None
 
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     def subscribe(self, event_emitter):
         with self.lock:
@@ -86,7 +86,6 @@ class Script(Component):
     def attach_script(self, source, engine_api, public_vars=None):
         with self.lock:
         
-
             # Add engine API to Lua environment
 
             self.source = source

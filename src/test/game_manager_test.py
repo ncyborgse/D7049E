@@ -24,28 +24,34 @@ scene_graph = SceneGraph(name="Scene1")
 scene_manager.add_scene(scene_graph)
 scene_manager.load_scene("Scene1")
 
+print("Creating components")
+
 
 src = "src/test/testScript.lua"
 script1 = Script("Script1")
+
+print("Attaching script")
+
 script1.attach_script(src, engine_api)
+
+print("Creating colliders")
 
 collider1 = Collider()
 collider1.set_shape(Box(1, 1, 1))
 
 collider2 = Collider()
 collider2.set_shape(Box(1, 1, 1))
+
+print("Setting transforms")
+
 transform = np.identity(4)
 transform[3][0] = 0.5
 collider2.set_transform(transform)
 
+print("Creating nodes")
 
-ctx = moderngl.create_context()
 
-# Set up the OpenGL context and shaders
-ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
-ctx.enable(moderngl.DEPTH_TEST)     # Enable depth testing
-
-mesh_renderer = MeshRenderer(ctx, "../../assets/models/Trollboyobj.obj")
+mesh_renderer = MeshRenderer("../../assets/models/Trollboyobj.obj")
 
 
 node1 = Node("Node1", transform  = np.identity(4))
@@ -57,11 +63,17 @@ node2 = Node("Node2", transform = np.identity(4))
 node2.add_component(collider2)
 
 camera = Camera()
+eye = [5.0, 7.0, 6.0]
+camera.set_eye(eye)
 node3 = Node("Camera", transform = np.identity(4))
 node3.add_component(camera)
+
+print("Adding nodes to scene graph")
 
 scene_graph.add_node(node1)
 scene_graph.add_node(node2)
 scene_graph.add_node(node3)
 
+print("Running game manager")
 game_manager = GameManager()
+game_manager.run()

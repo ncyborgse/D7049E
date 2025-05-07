@@ -13,7 +13,7 @@ class Collider(Component):
         self.shape = None
         self.transform = None
         self.enabled = True
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     def register_collision_manager(self, collision_manager):
         with self.lock:

@@ -6,7 +6,7 @@ class SceneManager:
         self.scenes = []
         self.current_scene_index = None
         self.current_cameras = []
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     def add_scene(self, scene):
         with self.lock:
@@ -17,8 +17,7 @@ class SceneManager:
 
     def get_scenes(self):
         with self.lock:
-            if self.current_scene_index is not None:
-                return self.scenes[self.current_scene_index]
+            return self.scenes
 
     def get_current_scene(self):
         with self.lock:

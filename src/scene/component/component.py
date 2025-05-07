@@ -7,7 +7,7 @@ class Component(ABC):
         self.name = name
         self.subscriptions = []
         self.parent = None
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     @abstractmethod
     def subscribe(self, event_emitter):

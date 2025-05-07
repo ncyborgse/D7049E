@@ -3,6 +3,8 @@ from core.state_manager import StateManager
 from core.global_scene_manager import scene_manager
 from core.render_manager import RenderManager
 from collision.collision_manager import CollisionManager
+import pyglet
+
 import threading
 
 class GameManager:
@@ -19,10 +21,14 @@ class GameManager:
         self.render_manager.register_mesh_renderers()
         self.collision_manager.register_colliders()
 
+
+        #window = pyglet.window.Window(800, 600, "Game Window")
+
         self.threads = [
             threading.Thread(target=self.engine.run),
             threading.Thread(target=self.render_manager.run),
-            threading.Thread(target=self.collision_manager.run)
+            threading.Thread(target=self.collision_manager.run),
+            threading.Thread(target=pyglet.app.run())
         ]
 
         for thread in self.threads:
