@@ -29,6 +29,11 @@ class StateManager:
             os.mkdir(project_dir)
         else:
             raise FileExistsError(f"Project '{project_name}' already exists.")
+        
+        new_scene = SceneGraph(name=f"{project_name}_scene")
+        self.scene_manager.add_scene(new_scene)
+        self.scene_manager.load_scene(new_scene.get_name())
+        self.scene_manager.set_current_scene(new_scene)
 
     def save_project(self):
         if self.current_project is None:
