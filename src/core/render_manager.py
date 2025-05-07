@@ -3,6 +3,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))    # Fix the import path
 
 import time
+import moderngl
+import pyglet
 import numpy as np #from pyrr import Matrix44
 from scene.component.components.mesh_renderer import MeshRenderer
 
@@ -12,6 +14,11 @@ class RenderManager:
         self.scene_manager = scene_manager
         self.game_manager = game_manager
         self.meshes = []
+
+        self.window = pyglet.window.Window(800, 600, "New World")
+        self.ctx = moderngl.create_context()
+        self.ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
+        self.ctx.enable(moderngl.DEPTH_TEST)     # Enable depth testing
 
 
     def add_mesh(self, mesh_renderer: MeshRenderer):
@@ -91,9 +98,14 @@ class RenderManager:
             delta_time = current_time - previous_time
             previous_time = current_time
 
-            camera = self.scene_manager.get_current_camera()
-            if camera is None:
-                raise ValueError("Camera not found in GameManager.")
+            cameras = self.scene_manager.get_current_cameras()
+
+            if len(cameras) == 1:
+                camera = cameras[0]
+            elif len(cameras) > 1:
+                raise ValueError("Multiple cameras found in the scene. Please ensure only one camera is present.")
+            else:
+                raise ValueError("No camera found in the scene. Please add a camera to the scene.")
 
             eye = camera.get_eye()
             target = camera.get_target()
@@ -101,6 +113,7 @@ class RenderManager:
 
             view = self.look_at(eye, target, up)
 
+            self.ctx.clear(0.1, 0.1, 0.1)
             self.render_all(view, proj)
 
             # Sleep for a short duration to limit the frame rate

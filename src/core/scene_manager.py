@@ -5,7 +5,7 @@ class SceneManager:
     def __init__(self):
         self.scenes = []
         self.current_scene_index = None
-        self.current_camera = None
+        self.current_cameras = []
         self.lock = threading.Lock()
 
     def add_scene(self, scene):
@@ -26,9 +26,9 @@ class SceneManager:
                 return self.scenes[self.current_scene_index]
             return None
 
-    def get_current_camera(self):
+    def get_current_cameras(self):
         with self.lock:
-            return self.current_camera
+            return self.current_cameras
 
     def remove_scene(self, index):
         with self.lock:
@@ -63,12 +63,7 @@ class SceneManager:
                         for child in current_node.get_children():
                             nodes_to_check.append(child)
 
-                        if len(list_of_cameras) == 1:
-                            self.current_camera = list_of_cameras[0]
-                        elif len(list_of_cameras) > 1:
-                            raise ValueError("Multiple cameras found in the scene. Please ensure only one camera is present.")
-                        else:
-                            raise ValueError("No camera found in the scene. Please add a camera to the scene.")
+                        self.current_cameras = list_of_cameras
 
                     return scene
             raise ValueError(f"Scene '{scene_name}' not found.")
