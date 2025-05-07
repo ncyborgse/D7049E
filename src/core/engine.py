@@ -1,14 +1,13 @@
 import time
 
 class Engine:
-    def __init__(self, scene_manager, frame_rate=60):
+    def __init__(self, scene_manager, shutdown_event, frame_rate=60):
         self.frame_rate = frame_rate
         self.scene_manager = scene_manager
-        self.is_running = False
+        self.shutdown_event = shutdown_event
 
 
     def run(self):
-        self.is_running = True
         previous_time = time.time()
 
         # Subscribe all components to their nodes event emitters
@@ -20,7 +19,7 @@ class Engine:
         else:
             raise RuntimeError("Root node not found in the scene graph.")
 
-        while self.is_running:
+        while not self.shutdown_event.is_set():
             # Update each frame with delta time
             current_time = time.time()
             delta_time = current_time - previous_time
@@ -43,7 +42,3 @@ class Engine:
             
             # Sleep for a short duration to limit the frame rate
             time.sleep(1.0 / self.frame_rate)
-
-
-    def stop(self):
-        self.is_running = False

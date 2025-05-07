@@ -81,3 +81,4 @@ def on_draw():
 
 # Run the application
 pyglet.app.run()
+

@@ -74,6 +74,8 @@ class Collider(Component):
 
     def get_transform(self):
         with self.lock:
+            if self.transform is None:
+                return np.identity(4)
             return self.transform
     
     def get_world_transform(self):

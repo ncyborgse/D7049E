@@ -1,4 +1,4 @@
-from core.scene_manager import SceneManager
+from core.global_scene_manager import scene_manager
 from core.state_manager import StateManager
 from editor.display_manager import DisplayManager
 from editor.window.project_selection_window import ProjectSelectionWindow
@@ -8,7 +8,6 @@ import sys
 def main():
     if __name__ == "__main__":
         # Start the editor
-        scene_manager = SceneManager()
         state_manager = StateManager()
 
         state_manager.set_scene_manager(scene_manager)

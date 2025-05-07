@@ -8,7 +8,8 @@ from scene.component.components.mesh_renderer import MeshRenderer
 
 
 class RenderManager:
-    def __init__(self, scene_manager, game_manager=None):
+    def __init__(self, scene_manager, shutdown_event, game_manager=None):
+        self.shutdown_event = shutdown_event
         self.scene_manager = scene_manager
         self.game_manager = game_manager
         self.meshes = []
@@ -79,17 +80,11 @@ class RenderManager:
 
     def run(self):
         # Main loop for the render manager
-        self.is_running = True
-        previous_time = time.time()
-
         WINDOW_WIDTH = 800
         WINDOW_HEIGHT = 600
         proj = self.perspective_projection(45.0, WINDOW_WIDTH / WINDOW_HEIGHT, 0.1, 100.0)
 
-        while self.is_running:
-            current_time = time.time()
-            delta_time = current_time - previous_time
-            previous_time = current_time
+        while not self.shutdown_event.is_set():
 
             camera = self.scene_manager.get_current_camera()
             if camera is None:
@@ -106,5 +101,3 @@ class RenderManager:
             # Sleep for a short duration to limit the frame rate
             time.sleep(1.0 / 60)    # frame_rate = 60
 
-    def stop(self):
-        self.is_running = False

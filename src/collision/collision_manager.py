@@ -4,7 +4,7 @@ import time
 
 
 class CollisionManager:
-    def __init__(self, scene_manager, frame_rate=60):
+    def __init__(self, scene_manager, shutdown_event, frame_rate=60):
         self.colliders = []
         self.scene_manager = scene_manager
         self.prev_collisions = []
@@ -13,6 +13,7 @@ class CollisionManager:
         self.is_running = False
         self.frame_rate = frame_rate  # Set the desired frame rate
         p.setTimeStep(1.0 / self.frame_rate)  # Set the time step for the simulation
+        self.shutdown_event = shutdown_event
 
 
 
@@ -100,18 +101,15 @@ class CollisionManager:
 
     def run(self):
         # Main loop for the collision manager
-        self.is_running = True
 
-        while self.is_running:
+
+        while not self.shutdown_event.is_set():
 
             self.check_collisions()
 
             # Sleep for a short duration to limit the frame rate
             time.sleep(1.0 / self.frame_rate)
 
-    def stop(self):
-        self.is_running = False
-        p.disconnect(self.physics_client)
 
 
                 
