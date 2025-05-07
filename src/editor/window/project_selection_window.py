@@ -6,15 +6,18 @@ import os
 from editor.window.main_window import MainWindow
 
 class ProjectSelectionWindow(Window):
-    def __init__(self, name, state_manager, width=400, height=300):
+    def __init__(self, name, state_manager, width=1200, height=800):
         super().__init__(name, width, height)
         self.config_manager = ConfigManager()
         self.state_manager = state_manager
 
     def draw_self(self):
-        dpg.add_text("Select a project to load:")
+        with dpg.group(horizontal=True):
+            dpg.add_button(label="Create New Project", callback=lambda: self.select_project_name()) 
+            dpg.add_button(label="Exit Program", callback=lambda: dpg.stop_dearpygui())
         dpg.add_separator()
         
+        dpg.add_text("Select a project to load:")
         project_src = self.config_manager.get_config()["projects_path"]
 
         # Get a list of all project folders in the projects directory
@@ -24,8 +27,8 @@ class ProjectSelectionWindow(Window):
             # Create a button for each project folder
             dpg.add_button(label=project, callback= lambda: self.load_project(project))  # Load the project when clicked
 
-        dpg.add_button(label="Create New Project", callback=lambda: self.select_project_name()) 
-        dpg.add_button(label="Close", callback=self.unload)  # Close button to unload the window
+
+
         with dpg.window(label = "New Project", modal = True, show = False, id = "new_project_window", width = 300, height = 200):
             dpg.add_text("Enter new project name:")
             dpg.add_input_text(label="Project Name", tag="project_name_input")

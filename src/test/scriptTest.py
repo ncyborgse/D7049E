@@ -4,9 +4,6 @@ from core.scene_manager import SceneManager
 from scene.objects.node import Node
 from pyee import EventEmitter
 
-
-
-
 scene_manager = SceneManager()
 
 engine_api = {
@@ -17,16 +14,12 @@ engine_api = {
     }
 }
 
-
 scene_graph = SceneGraph(name="Scene1")
 
 scene_manager.add_scene(scene_graph)
 scene_manager.load_scene("Scene1")
 
-
-
 emitter = EventEmitter()
-
 
 src = "src/test/testScript.lua"
 script1 = Script("Script1")
