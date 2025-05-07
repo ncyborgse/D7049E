@@ -14,18 +14,25 @@ from core.component_registry import register_component
 
 @register_component
 class MeshRenderer(Component):
-    def __init__(self, ctx, obj_path=DEFAULT_MODEL_PATH, name="MeshRenderer"):
+    def __init__(self, obj_path=DEFAULT_MODEL_PATH, name="MeshRenderer"):
         super().__init__(name=name)
-        self.enabled = True
-
-        self.ctx = ctx
-        self.scene = Wavefront(obj_path, collect_faces=True)
-        self.vertices, self.vertex_indices = self._prepare_vertex_data()
-        self.vbo = self.ctx.buffer(self.vertices.tobytes())
-        self.program = self._create_shader_program()
-        self.vao = self.ctx.vertex_array(self.program, [(self.vbo, '3f 3f', 'in_vert', 'in_normal')])
+        self.obj_path = obj_path
+        self.enabled = False
         self.transform = np.identity(4)
         self.lock = threading.Lock()
+
+
+    def create(self, ctx):
+        self.enabled()
+
+        with self.lock:
+            self.ctx = ctx
+            self.scene = Wavefront(self.obj_path, collect_faces=True)
+            self.vertices, self.vertex_indices = self._prepare_vertex_data()
+            self.vbo = self.ctx.buffer(self.vertices.tobytes())
+            self.program = self._create_shader_program()
+            self.vao = self.ctx.vertex_array(self.program, [(self.vbo, '3f 3f', 'in_vert', 'in_normal')])
+            self.transform = np.identity(4)
 
 
     def subscribe(self, event_emitter):
