@@ -7,7 +7,6 @@ from pathlib import Path
 
 component_registry = {}
 
-
 def load_components():
     project_root = Path(__file__).parents[2]
     component_folder = project_root / "src" / "scene" / "component" / "components"
@@ -17,10 +16,9 @@ def load_components():
             module_name = f"{component_folder}.{file[:-3]}"
             importlib.import_module("scene.component.components." + file[:-3])
 
-
 def register_component(component_class):
     print(f"Registering component: {component_class.__name__}")
     component_registry[component_class.__name__] = component_class
     return component_class
 
-load_components()
+#load_components()

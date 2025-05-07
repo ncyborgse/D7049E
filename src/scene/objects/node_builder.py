@@ -2,6 +2,7 @@ import os
 import json
 import pathlib
 from core.scene_manager import SceneManager
+from core.global_scene_manager import scene_manager
 
 from scene.objects.node import Node
 
@@ -10,7 +11,7 @@ class NodeBuilder:
     def __init__(self, path):
         self.path = path
 
-    def build(self, prefabName, scene_manager):
+    def build(self, prefabName):
         prefab_path = os.path.join(self.path, f"{prefabName}.json")
         if not os.path.exists(prefab_path):
             raise FileNotFoundError(f"Prefab '{prefabName}' not found at {prefab_path}.")
