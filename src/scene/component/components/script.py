@@ -2,6 +2,7 @@ from scene.component.component import Component
 from lupa import LuaRuntime
 from utilities.lua_proxy import LuaProxy
 from core.component_registry import register_component
+import threading
 
 
 @register_component
@@ -26,117 +27,124 @@ class Script(Component):
         self.public_vars = None
         self.public_functions = None
 
+        self.lock = threading.Lock()
+
     def subscribe(self, event_emitter):
-        supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit'] # Maybe load from file
+        with self.lock:
+            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit'] # Maybe load from file
 
-        # Check if context is set
-        if not self.globals:
-            raise RuntimeError("Script context is not set. Please load a script first.")
+            # Check if context is set
+            if not self.globals:
+                raise RuntimeError("Script context is not set. Please load a script first.")
 
-        for event in supported_events:
-            callback = self.globals[event]
-            if callable(callback):
-                super().subscribe_to(event_emitter, event, callback)
+            for event in supported_events:
+                callback = self.globals[event]
+                if callable(callback):
+                    super().subscribe_to(event_emitter, event, callback)
         
 
     def create_environment(self):
-        lua_globals = self.lua.globals()
-        env = self.lua.table()
+        with self.lock:
+            lua_globals = self.lua.globals()
+            env = self.lua.table()
 
-        # Copy standard Lua functions to the environment
-        for name, func in lua_globals.items():
-            if callable(func):
-                env[name] = func
+            # Copy standard Lua functions to the environment
+            for name, func in lua_globals.items():
+                if callable(func):
+                    env[name] = func
 
-        blacklist = {
-            "os": ["exit", "execute", "remove", "rename", "setlocale", "tmpname"],
-            "io": ["open", "popen", "tmpfile", "type", "lines", "read", "write"],
-            "_G": True,
-            "dofile": True,
-            "load": True,
-            "loadfile": True,
-            "require": True,
-        }
+            blacklist = {
+                "os": ["exit", "execute", "remove", "rename", "setlocale", "tmpname"],
+                "io": ["open", "popen", "tmpfile", "type", "lines", "read", "write"],
+                "_G": True,
+                "dofile": True,
+                "load": True,
+                "loadfile": True,
+                "require": True,
+            }
 
-        for key, value in blacklist.items():
-            if value is True:
-                env[key] = None
-            elif isinstance(value, list):
-                for func in value:
-                    env[key][func] = None
+            for key, value in blacklist.items():
+                if value is True:
+                    env[key] = None
+                elif isinstance(value, list):
+                    for func in value:
+                        env[key][func] = None
 
-        game_api = self.lua.table()
+            game_api = self.lua.table()
 
-        for component_name, component in self.engine_api.items():
+            for component_name, component in self.engine_api.items():
 
-            # Expose the proxy object to Lua
+                # Expose the proxy object to Lua
 
-            proxy = LuaProxy(component, self.lua)
-            game_api[component_name] = proxy
+                proxy = LuaProxy(component, self.lua)
+                game_api[component_name] = proxy
 
-        env["game"] = game_api
+            env["game"] = game_api
 
-        return env
+            return env
 
     def attach_script(self, source, engine_api, public_vars=None):
+        with self.lock:
         
 
-        # Add engine API to Lua environment
+            # Add engine API to Lua environment
 
-        self.source = source
-        self.engine_api = engine_api
+            self.source = source
+            self.engine_api = engine_api
 
-        # Read script file and subscribe to events
+            # Read script file and subscribe to events
 
-        with (open(source, 'r')) as file:
-            script = file.read()
+            with (open(source, 'r')) as file:
+                script = file.read()
 
-            self.environment = self.create_environment()
-        
-            # Inject public variables into the environment
-
-            if public_vars:
-                for var_name, var_value in public_vars.items():
-                    self.environment[var_name] = LuaProxy(var_value, self.lua)
-        
-            loader_func = self.lua.execute('''
-                    return function(script_code, env)
-                        local chunk, err = load(script_code, "script", "t", env)
-                        return chunk, err
-                    end
-            ''')
+                self.environment = self.create_environment()
             
-            if not callable(loader_func):
-                raise RuntimeError("Loader function is not callable.")
+                # Inject public variables into the environment
 
-            chunk, err = loader_func(script, self.environment)
-            if not chunk:
-                raise RuntimeError(f"Failed to load script\n{err}")
+                if public_vars:
+                    for var_name, var_value in public_vars.items():
+                        self.environment[var_name] = LuaProxy(var_value, self.lua)
             
-            try:
-                chunk()
-            except Exception as e:
-                raise RuntimeError(f"Error executing script: {e}")
+                loader_func = self.lua.execute('''
+                        return function(script_code, env)
+                            local chunk, err = load(script_code, "script", "t", env)
+                            return chunk, err
+                        end
+                ''')
+                
+                if not callable(loader_func):
+                    raise RuntimeError("Loader function is not callable.")
 
-            self.globals = self.environment
+                chunk, err = loader_func(script, self.environment)
+                if not chunk:
+                    raise RuntimeError(f"Failed to load script\n{err}")
+                
+                try:
+                    chunk()
+                except Exception as e:
+                    raise RuntimeError(f"Error executing script: {e}")
+
+                self.globals = self.environment
 
     def run_function(self, func_name, *args):
-        if self.globals and func_name in self.globals:
-            func = self.globals[func_name]
-            if callable(func):
-                return func(*args)
+        with self.lock:
+            if self.globals and func_name in self.globals:
+                func = self.globals[func_name]
+                if callable(func):
+                    return func(*args)
+                else:
+                    raise TypeError(f"Function '{func_name}' is not callable.")
             else:
-                raise TypeError(f"Function '{func_name}' is not callable.")
-        else:
-            raise RuntimeError(f"Function '{func_name}' not found in script context.")
+                raise RuntimeError(f"Function '{func_name}' not found in script context.")
         
     def to_dict(self):
-        base = super().to_dict()
-        base.update({
-            "source": self.source,
-            "public_vars": self.public_vars,
-        })
-        return base
+        with self.lock:
+            base = super().to_dict()
+            base.update({
+                "source": self.source,
+                "public_vars": self.public_vars,
+            })
+            return base
 
     @classmethod
     def from_dict(cls, data, scene_manager):

@@ -116,6 +116,10 @@ class MeshRenderer(Component):
         self.program['light_dir'].value = light_dir
         self.vao.render()
 
+    def to_dict(self):
+        base = super().to_dict()
+        # Update base
+        return base
 
     @classmethod
     def from_dict(self, data, scene_manager):
