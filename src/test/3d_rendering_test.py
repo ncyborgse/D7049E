@@ -7,8 +7,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 import moderngl
 import pyglet
 import numpy as np #from pyrr import Matrix44
-from scene.component.components.mesh_renderer import MeshRenderer
+
+from core.scene_manager import SceneManager
 from core.render_manager import RenderManager
+
+from scene.scene_graph import SceneGraph
+from scene.objects.node import Node
+from scene.component.components.mesh_renderer import MeshRenderer
+
 
 
 # Create a pyglet window
@@ -17,30 +23,50 @@ window = pyglet.window.Window(800, 600, "MeshRenderer Test")
 # Create ModernGL context
 ctx = moderngl.create_context()
 
-# Initialize render manager and load a mesh
-ctx.enable(moderngl.CULL_FACE)  # Enable backface culling
-ctx.enable(moderngl.DEPTH_TEST)  # Enable depth testing
-render_manager = RenderManager()
+# Set up the OpenGL context and shaders
+ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
+ctx.enable(moderngl.DEPTH_TEST)     # Enable depth testing
+
+# Create a scene manager and render manager
+scene_manager = SceneManager()
+render_manager = RenderManager(scene_manager)
+
+scene_graph = SceneGraph()
+scene_manager.add_scene(scene_graph)
+
+node1 = Node("Node1", parent=scene_graph.get_root())
+node2 = Node("Node2", parent=node1)
+
+# Create mesh renderers and add them to the nodes
 mesh1 = MeshRenderer(ctx, "../../assets/models/Trollboyobj.obj")
 mesh2 = MeshRenderer(ctx, "../../assets/models/banana duck.obj")
-render_manager.add_mesh(mesh1)
-render_manager.add_mesh(mesh2)
+node1.add_component(mesh1)
+node2.add_component(mesh2)
 
-# Optional: move the mesh to a different position
+# Set the transforms for the nodes
+# Note: The transforms are in column-major order for OpenGL
 transform1 = np.array([
-    [-5,  0,  0, 0],
-    [ 0, -15,  0, 0],
-    [ 0,  0, -5, 0],
-    [ 0,  0,  0, 1]
+    [ 0.5, 0.0, 0.0,  -5],
+    [ 0.0, 0.5, 0.0, -10],
+    [ 0.0, 0.0, 0.5,   0],
+    [ 0.0, 0.0, 0.0,   1]
 ], dtype='f4')  # or dtype='float32'
 transform2 = np.array([
-    [-5,  0,  0, 0],
-    [ 0, -5,  0, 0],
-    [ 0,  0, -10, 0],
-    [ 0,  0,  0, 1]
+    [ 1, 0, 0,  0],
+    [ 0, 1, 0, -5],
+    [ 0, 0, 1,  0],
+    [ 0, 0, 0,  1]
 ], dtype='f4')  # or dtype='float32'
-mesh1.set_transform(transform1)
-mesh2.set_transform(transform2)
+
+# Set the local transforms for the nodes
+node1.set_local_transform(transform1)
+node2.set_local_transform(transform2)
+
+# Update the transforms of the mesh renderers
+mesh1.set_transform(np.identity(4))
+mesh2.set_transform(np.identity(4))
+
+render_manager.register_mesh_renderers()    # find all mesh renderers in the scene graph and add them to the render manager
 
 
 @window.event
