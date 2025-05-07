@@ -3,7 +3,7 @@ import dearpygui.dearpygui as dpg
 from editor.element.display_element import DisplayElement
 
 class Window(ABC):
-    def __init__(self, name, width=800, height=600):
+    def __init__(self, name, width=1200, height=600):
         self.name = name
         self.width = width
         self.height = height

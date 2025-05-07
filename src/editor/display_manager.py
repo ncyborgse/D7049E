@@ -7,7 +7,7 @@ class DisplayManager:
 
     def load_context(self):
         dpg.create_context()
-        dpg.create_viewport(title='4X Engine', width=800, height=600)
+        dpg.create_viewport(title='4X Engine', width=1200, height=600)
         dpg.setup_dearpygui()
         dpg.show_viewport()
 

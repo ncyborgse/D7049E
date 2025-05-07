@@ -2,13 +2,14 @@ import dearpygui.dearpygui as dpg
 from editor.window.window import Window
 from editor.element.scene_graph_element import SceneGraphElement
 from editor.element.add_scene_graph_element import AddSceneGraphElement
+from core.global_scene_manager import scene_manager
 
 
 class SceneGraphWindow(Window):
     def __init__(self, name, inspector_window, width=400, height=600):
         super().__init__(name, width, height)
         self.inspector_window = inspector_window
-        self.selected_scene_graph = None
+        self.selected_scene_graph = scene_manager.get_current_scene()
 
     def load_scene_graph(self, scene_graph):
         self.selected_scene_graph = scene_graph
