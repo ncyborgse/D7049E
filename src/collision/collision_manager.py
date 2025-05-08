@@ -55,6 +55,7 @@ class CollisionManager:
 
             transform = collider.get_world_transform()
 
+            print(transform)
             rotation_matrix = transform[:3, :3]
             quaternion = R.from_matrix(rotation_matrix).as_quat()
             p.resetBasePositionAndOrientation(id, transform[:3, 3], quaternion)

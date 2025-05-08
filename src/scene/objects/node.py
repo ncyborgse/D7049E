@@ -1,5 +1,6 @@
 import numpy as np
 from core.component_registry import component_registry
+from utilities.lock_ordering import ordered_locks
 import pyee
 from readerwriterlock import rwlock
 
@@ -33,7 +34,9 @@ class Node:
 
     def call_event(self, event, *args, **kwargs):
         with self.lock.gen_rlock():
-            self.event_emitter.emit(event, *args, **kwargs)
+            event_emitter = self.event_emitter
+            
+        event_emitter.emit(event, *args, **kwargs)
 
     def call_event_rec(self, event, *args, **kwargs):
         with self.lock.gen_rlock():
@@ -45,15 +48,17 @@ class Node:
     def subscribe_children_rec(self):
         with self.lock.gen_rlock():
             children = list(self.children)
-        #print("Subscribing to children")
         self.subscribe_components()
-        for child in self.children:
+        for child in children:
             child.subscribe_children_rec()
+        
 
     def subscribe_components(self):
         with self.lock.gen_rlock():
-            for component in self.components:
-                component.subscribe(self.event_emitter)
+            components = self.components
+            event_emitter = self.event_emitter
+        for component in components:
+            component.subscribe(event_emitter)
 
 
 
@@ -114,13 +119,16 @@ class Node:
     # Transform management
 
     def get_world_transform(self):
-        with self.lock.gen_rlock():
-            parent = self.parent
-            local_transform = self.transform 
-
+        parent = self.get_parent()
         if parent:
-            return np.dot(self.parent.get_world_transform(), self.transform)
-        return self.transform
+            with ordered_locks([self, parent], lock_type="gen_rlock"):
+                local_transform = self.transform
+                parent_transform = parent.get_world_transform()
+                world_transform = np.dot(parent_transform, local_transform)
+        else:
+            with self.lock.gen_rlock():
+                world_transform = self.transform
+        return world_transform
 
     def get_local_transform(self):
         with self.lock.gen_rlock():
@@ -133,6 +141,9 @@ class Node:
             self.transform = transform
 
     def apply_transform(self, transform):
+        # If transform is list, convert to 4x4 numpy array
+        if isinstance(transform, list):
+            transform = np.array(transform).reshape((4, 4))
         if transform.shape != (4, 4):
             raise ValueError("Transform must be a 4x4 matrix.")
         with self.lock.gen_wlock():

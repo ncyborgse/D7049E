@@ -4,44 +4,46 @@ import os
 # Add the project root to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-import moderngl
-import pyglet
 import numpy as np #from pyrr import Matrix44
 
 from core.scene_manager import SceneManager
 from core.render_manager import RenderManager
+from core.global_scene_manager import scene_manager
 
 from scene.scene_graph import SceneGraph
 from scene.objects.node import Node
 from scene.component.components.mesh_renderer import MeshRenderer
+import threading
+from scene.component.components.camera import Camera
 
 
 
-# Create a pyglet window
-window = pyglet.window.Window(800, 600, "MeshRenderer Test")
-
-# Create ModernGL context
-ctx = moderngl.create_context()
-
-# Set up the OpenGL context and shaders
-ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
-ctx.enable(moderngl.DEPTH_TEST)     # Enable depth testing
-
+shutdown_event = threading.Event()
 # Create a scene manager and render manager
-scene_manager = SceneManager()
-render_manager = RenderManager(scene_manager)
 
-scene_graph = SceneGraph()
+render_manager = RenderManager(scene_manager, shutdown_event)
+
+scene_graph = SceneGraph(name="Scene1")
 scene_manager.add_scene(scene_graph)
 
-node1 = Node("Node1", parent=scene_graph.get_root())
+node1 = Node("Node1", parent=None)
 node2 = Node("Node2", parent=node1)
+node3 = Node("Node3", transform=np.identity(4))
 
 # Create mesh renderers and add them to the nodes
-mesh1 = MeshRenderer(ctx, "../../assets/models/Trollboyobj.obj")
-mesh2 = MeshRenderer(ctx) #"../../assets/models/banana duck.obj")
+mesh1 = MeshRenderer("assets/models/Trollboyobj.obj")
+mesh2 = MeshRenderer("assets/models/banana duck.obj")
+camera = Camera()
+camera.set_eye([7.0, 6.0, 5.0])
 node1.add_component(mesh1)
 node2.add_component(mesh2)
+node3.add_component(camera)
+
+scene_graph.add_node(node1)
+scene_graph.add_node(node2)
+scene_graph.add_node(node3)
+
+
 
 # Set the transforms for the nodes
 # Note: The transforms are in column-major order for OpenGL
@@ -66,19 +68,9 @@ node2.set_local_transform(transform2)
 mesh1.set_transform(np.identity(4))
 mesh2.set_transform(np.identity(4))
 
+scene_manager.load_scene("Scene1")  # Load the scene into the scene manager to update tracked cameras
+
 render_manager.register_mesh_renderers()    # find all mesh renderers in the scene graph and add them to the render manager
 
-
-@window.event
-def on_draw():
-    ctx.clear(0.1, 0.1, 0.1)
-
-    # Create view and projection matrices
-    view = render_manager.look_at( (5.0, 7.0, 6.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0) )
-    proj = render_manager.perspective_projection(45.0, window.width / window.height, 0.1, 100.0)
-
-    render_manager.render_all(view, proj)    # render all meshes in the render manager
-
-# Run the application
-pyglet.app.run()
+render_manager.run()
 

@@ -34,7 +34,7 @@ collider1 = Collider()
 collider1.set_shape(Box(1, 1, 1))
 
 collider2 = Collider()
-collider2.set_shape(Box(1, 1, 1))
+collider2.set_shape(Box(10, 10, 10))
 
 transform = np.identity(4)
 transform[3][0] = 0.5

@@ -35,6 +35,8 @@ class MeshRenderer(Component):
             self.program = self._create_shader_program()
             self.vao = self.ctx.vertex_array(self.program, [(self.vbo, '3f 3f', 'in_vert', 'in_normal')])
             self.transform = np.identity(4)
+            self.not_created = False
+
 
 
     def subscribe(self, event_emitter):
@@ -126,14 +128,17 @@ class MeshRenderer(Component):
         )
 
     def render(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0)):
+        parent_transform = self.get_parent().get_world_transform() if self.get_parent() else np.identity(4)
         with self.lock.gen_rlock():
             if not self.enabled:
                 return
-            mvp = np.dot( np.dot(projection_matrix, view_matrix), self.transform )
+            # Get the world transform of the parent node
+            transform = np.dot(parent_transform, self.transform)
+            mvp = np.dot( np.dot(projection_matrix, view_matrix), transform )
             self.program['mvp'].write(mvp.T.astype('f4').tobytes())
             self.program['model'].write(self.transform.astype('f4').tobytes())
             self.program['light_dir'].value = light_dir
-            self.vao.render()
+        self.vao.render()
 
     def to_dict(self):
         with self.lock.gen_rlock():

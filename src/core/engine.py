@@ -30,9 +30,7 @@ class Engine:
 
             previous_time = current_time
 
-            print("getting current scene")
             scene_graph = self.scene_manager.get_current_scene()
-            print("Current scene retrieved")
 
             # Call the update method on all nodes in the scene graph
 

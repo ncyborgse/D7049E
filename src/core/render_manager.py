@@ -16,7 +16,7 @@ class RenderManager:
         self.game_manager = game_manager
         self.meshes = []
 
-        self.window = pyglet.window.Window(800, 600, "New World")
+        self.window = pyglet.window.Window(800, 600, "New World", vsync=True)
         self.ctx = moderngl.create_context()
         self.ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
         self.ctx.enable(moderngl.DEPTH_TEST)     # Enable depth testing
@@ -86,11 +86,15 @@ class RenderManager:
             mesh.render(view_matrix, projection_matrix, light_dir)
 
     def draw(self):
+        #self.ctx.clear(0.2, 0.2, 0.2)
+
+        
         if self.shutdown_event.is_set():
             pyglet.app.exit()
             return
         
         cameras = self.scene_manager.get_current_cameras()
+        print(cameras)
         if len(cameras) != 1:
             raise ValueError("Expected exactly one camera in scene.")
 
@@ -98,6 +102,13 @@ class RenderManager:
         view = self.look_at(camera.get_eye(), camera.get_target(), camera.get_up())
         self.ctx.clear(0.1, 0.1, 0.1)
         self.render_all(view, self.proj)
+        self.window.flip()
+        
+
+        
+
+    def update(self, dt):
+        self.window.invalid = True
 
     def run(self):
         self.proj = self.perspective_projection(45.0, 800 / 600, 0.1, 100.0)
@@ -106,10 +117,15 @@ class RenderManager:
         def on_draw():
             self.draw()
 
-        pyglet.clock.schedule_interval(lambda dt: self.window.dispatch_event('on_draw'), 1/60)  # Schedule the draw function to run at 60 FPS
+        @self.window.event
+        def on_close():
+            self.shutdown_event.set()
+            pyglet.app.exit()
+
+        pyglet.clock.schedule_interval(lambda dt: self.window.dispatch_event('on_draw'), 1/60.0)
         pyglet.app.run()
 
-        ''' 
+        '''
         # Main loop for the render manager
         WINDOW_WIDTH = 800
         WINDOW_HEIGHT = 600

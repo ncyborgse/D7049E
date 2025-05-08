@@ -48,7 +48,6 @@ class SceneManager:
     def load_scene(self, scene_name):
         with self.lock:
             for index, scene in enumerate(self.scenes):
-                print(scene.get_name())
                 if scene.get_name() == scene_name:
                     self.current_scene_index = index
 
