@@ -3,7 +3,7 @@ from lupa import LuaRuntime
 from utilities.lua_proxy import LuaProxy
 from core.component_registry import register_component
 import threading
-
+from readerwriterlock import rwlock
 
 @register_component
 class Script(Component):
@@ -27,64 +27,64 @@ class Script(Component):
         self.public_vars = None
         self.public_functions = None
 
-        self.lock = threading.RLock()
+        self.lock = rwlock.RWLockFair()
 
     def subscribe(self, event_emitter):
-        with self.lock:
+        with self.lock.gen_wlock():
             supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit'] # Maybe load from file
 
             # Check if context is set
             if not self.globals:
                 raise RuntimeError("Script context is not set. Please load a script first.")
+            globs = self.globals
 
-            for event in supported_events:
-                callback = self.globals[event]
-                if callable(callback):
-                    super().subscribe_to(event_emitter, event, callback)
+        for event in supported_events:
+            callback = globs[event]
+            if callable(callback):
+                super().subscribe_to(event_emitter, event, callback)
         
 
     def create_environment(self):
-        with self.lock:
-            lua_globals = self.lua.globals()
-            env = self.lua.table()
+        lua_globals = self.lua.globals()
+        env = self.lua.table()
 
-            # Copy standard Lua functions to the environment
-            for name, func in lua_globals.items():
-                if callable(func):
-                    env[name] = func
+        # Copy standard Lua functions to the environment
+        for name, func in lua_globals.items():
+            if callable(func):
+                env[name] = func
 
-            blacklist = {
-                "os": ["exit", "execute", "remove", "rename", "setlocale", "tmpname"],
-                "io": ["open", "popen", "tmpfile", "type", "lines", "read", "write"],
-                "_G": True,
-                "dofile": True,
-                "load": True,
-                "loadfile": True,
-                "require": True,
-            }
+        blacklist = {
+            "os": ["exit", "execute", "remove", "rename", "setlocale", "tmpname"],
+            "io": ["open", "popen", "tmpfile", "type", "lines", "read", "write"],
+            "_G": True,
+            "dofile": True,
+            "load": True,
+            "loadfile": True,
+            "require": True,
+        }
 
-            for key, value in blacklist.items():
-                if value is True:
-                    env[key] = None
-                elif isinstance(value, list):
-                    for func in value:
-                        env[key][func] = None
+        for key, value in blacklist.items():
+            if value is True:
+                env[key] = None
+            elif isinstance(value, list):
+                for func in value:
+                    env[key][func] = None
 
-            game_api = self.lua.table()
+        game_api = self.lua.table()
 
-            for component_name, component in self.engine_api.items():
+        for component_name, component in self.engine_api.items():
 
-                # Expose the proxy object to Lua
+            # Expose the proxy object to Lua
 
-                proxy = LuaProxy(component, self.lua)
-                game_api[component_name] = proxy
+            proxy = LuaProxy(component, self.lua)
+            game_api[component_name] = proxy
 
-            env["game"] = game_api
+        env["game"] = game_api
 
-            return env
+        return env
 
     def attach_script(self, source, engine_api, public_vars=None):
-        with self.lock:
+        with self.lock.gen_wlock():
         
             # Add engine API to Lua environment
 
@@ -126,7 +126,7 @@ class Script(Component):
                 self.globals = self.environment
 
     def run_function(self, func_name, *args):
-        with self.lock:
+        with self.lock.gen_rlock():
             if self.globals and func_name in self.globals:
                 func = self.globals[func_name]
                 if callable(func):
@@ -137,7 +137,8 @@ class Script(Component):
                 raise RuntimeError(f"Function '{func_name}' not found in script context.")
         
     def to_dict(self):
-        with self.lock:
+        with self.lock.gen_rlock():
+
             base = super().to_dict()
             base.update({
                 "source": self.source,

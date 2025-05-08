@@ -4,6 +4,7 @@ from core.global_scene_manager import scene_manager
 from core.render_manager import RenderManager
 from collision.collision_manager import CollisionManager
 import pyglet
+import time
 
 import threading
 
@@ -17,24 +18,33 @@ class GameManager:
         self.engine = Engine(scene_manager, self.shutdown_event)
         self.render_manager = RenderManager(scene_manager, self.shutdown_event)
         self.collision_manager = CollisionManager(scene_manager, self.shutdown_event)
+
+        # Reload the scene graph
+
+        scene_manager.load_scene(scene_manager.get_current_scene().get_name())
         
         self.render_manager.register_mesh_renderers()
         self.collision_manager.register_colliders()
 
 
-        #window = pyglet.window.Window(800, 600, "Game Window")
-
         self.threads = [
             threading.Thread(target=self.engine.run),
-            threading.Thread(target=self.render_manager.run),
-            threading.Thread(target=self.collision_manager.run),
-            threading.Thread(target=pyglet.app.run())
+            threading.Thread(target=self.collision_manager.run)
         ]
 
+        print("Starting threads")
+
+
+
         for thread in self.threads:
+            thread.daemon = True  # Set the thread as a daemon thread
             thread.start()
 
         try:
+            self.render_manager.run()
+            #time.sleep(5)
+
+            self.shutdown_event.set()
             for t in self.threads:
                 t.join()
         except KeyboardInterrupt:

@@ -21,7 +21,6 @@ class RenderManager:
         self.ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
         self.ctx.enable(moderngl.DEPTH_TEST)     # Enable depth testing
 
-
     def add_mesh(self, mesh_renderer: MeshRenderer):
         self.meshes.append(mesh_renderer)
 
@@ -86,8 +85,31 @@ class RenderManager:
                 mesh.create(self.ctx)
             mesh.render(view_matrix, projection_matrix, light_dir)
 
+    def draw(self):
+        if self.shutdown_event.is_set():
+            pyglet.app.exit()
+            return
+        
+        cameras = self.scene_manager.get_current_cameras()
+        if len(cameras) != 1:
+            raise ValueError("Expected exactly one camera in scene.")
+
+        camera = cameras[0]
+        view = self.look_at(camera.get_eye(), camera.get_target(), camera.get_up())
+        self.ctx.clear(0.1, 0.1, 0.1)
+        self.render_all(view, self.proj)
 
     def run(self):
+        self.proj = self.perspective_projection(45.0, 800 / 600, 0.1, 100.0)
+
+        @self.window.event
+        def on_draw():
+            self.draw()
+
+        pyglet.clock.schedule_interval(lambda dt: self.window.dispatch_event('on_draw'), 1/60)  # Schedule the draw function to run at 60 FPS
+        pyglet.app.run()
+
+        ''' 
         # Main loop for the render manager
         WINDOW_WIDTH = 800
         WINDOW_HEIGHT = 600
@@ -116,5 +138,8 @@ class RenderManager:
             self.render_all(view, proj)
 
             # Sleep for a short duration to limit the frame rate
-            time.sleep(1.0 / 60)    # frame_rate = 60
+            #time.sleep(1.0 / 60)    # frame_rate = 60
+            self.window.flip()    # Swap the buffers to display the rendered frame
+            pyglet.clock.tick()
 
+        '''

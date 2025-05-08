@@ -10,6 +10,7 @@ import numpy as np
 from pywavefront import Wavefront
 from scene.component.component import Component
 from core.component_registry import register_component
+from readerwriterlock import rwlock
 
 
 @register_component
@@ -20,13 +21,13 @@ class MeshRenderer(Component):
         self.enabled = False
         self.not_created = True
         self.transform = np.identity(4)
-        self.lock = threading.Lock()
+        self.lock = rwlock.RWLockFair()
 
 
     def create(self, ctx):
-        self.enabled()
+        self.enable()
 
-        with self.lock:
+        with self.lock.gen_wlock():
             self.ctx = ctx
             self.scene = Wavefront(self.obj_path, collect_faces=True)
             self.vertices, self.vertex_indices = self._prepare_vertex_data()
@@ -37,7 +38,7 @@ class MeshRenderer(Component):
 
 
     def subscribe(self, event_emitter):
-        with self.lock:
+        with self.lock.gen_wlock():
             # On spawn, enable the mesh renderer
             event_emitter.on("onSpawn", self.enable)
             # On destroy, disable the mesh renderer
@@ -45,15 +46,11 @@ class MeshRenderer(Component):
 
 
     def enable(self):
-        with self.lock:
-            if self.enabled:
-                raise RuntimeError("Mesh Renderer is already enabled.")
+        with self.lock.gen_wlock():
             self.enabled = True
 
     def disable(self):
-        with self.lock:
-            if not self.enabled:
-                raise RuntimeError("Collider is already disabled.")
+        with self.lock.gen_wlock():
             self.enabled = False
 
     def set_transform(self, transform):
@@ -61,7 +58,7 @@ class MeshRenderer(Component):
         if transform.shape != (4, 4):
             raise ValueError("Transform must be a 4x4 matrix.")
 
-        with self.lock:
+        with self.lock.gen_wlock():
             if self.get_parent():
                 self.transform = np.dot(self.get_parent().transform, transform)
             else:
@@ -101,6 +98,7 @@ class MeshRenderer(Component):
         return np.array(vertices, dtype='f4'), vertex_indices
 
     def _create_shader_program(self):
+
         return self.ctx.program(
             vertex_shader='''
                 #version 330
@@ -128,7 +126,7 @@ class MeshRenderer(Component):
         )
 
     def render(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0)):
-        with self.lock:
+        with self.lock.gen_rlock():
             if not self.enabled:
                 return
             mvp = np.dot( np.dot(projection_matrix, view_matrix), self.transform )
@@ -138,7 +136,7 @@ class MeshRenderer(Component):
             self.vao.render()
 
     def to_dict(self):
-        with self.lock:
+        with self.lock.gen_rlock():
             base = super().to_dict()
             # Update base
             return base

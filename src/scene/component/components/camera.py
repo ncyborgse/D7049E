@@ -2,6 +2,7 @@ import threading
 import numpy as np
 from scene.component.component import Component
 from core.component_registry import register_component
+from readerwriterlock import rwlock
 
 
 @register_component
@@ -13,19 +14,19 @@ class Camera(Component):
         self.target = [0.0, 0.0, -1.0]
         self.up = [0.0, 1.0, 0.0]
 
-        self.lock = threading.RLock()
+        self.lock = rwlock.RWLockFair()
 
 
     def get_eye(self):
-        with self.lock:
+        with self.lock.gen_rlock():
             return self.eye
 
     def get_target(self):
-        with self.lock:
+        with self.lock.gen_rlock():
             return self.target
 
     def get_up(self):
-        with self.lock:
+        with self.lock.gen_rlock():
             return self.up
 
 
@@ -35,7 +36,7 @@ class Camera(Component):
         if not all(isinstance(i, (int, float)) for i in eye):
             raise ValueError("Eye position must contain only numbers.")
 
-        with self.lock:
+        with self.lock.gen_wlock():
             eye = np.array(eye + [1.0])
             if self.get_parent():
                 world_eye = self.get_parent().transform @ eye
@@ -49,10 +50,13 @@ class Camera(Component):
         if not all(isinstance(i, (int, float)) for i in target):
             raise ValueError("Target position must contain only numbers.")
 
-        with self.lock:
+
+        if self.get_parent():
+            parent = self.get_parent()
+        with self.lock.gen_wlock():
             target = np.array(target + [1.0])
-            if self.get_parent():
-                world_target = self.get_parent().transform @ target
+            if parent:
+                world_target = parent.transform @ target
                 self.target = world_target[:3]
             else:
                 self.target = target[:3]
@@ -63,21 +67,23 @@ class Camera(Component):
         if not all(isinstance(i, (int, float)) for i in up):
             raise ValueError("Up vector must contain only numbers.")
 
-        with self.lock:
+
+        if self.get_parent():
+            parent = self.get_parent()
+        with self.lock.gen_wlock():
             up = np.array(up + [0.0])
-            if self.get_parent():
-                world_up = self.get_parent().transform @ up
+            if parent:
+                world_up = parent.transform @ up
                 self.up = world_up[:3]
             else:
                 self.up = up[:3]
 
 
     def subscribe(self, event_emitter):
-        with self.lock:
-            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit']
+        pass
 
     def to_dict(self):
-        with self.lock:
+        with self.lock.gen_rlock():
             base = super().to_dict()
             # Update base
             return base

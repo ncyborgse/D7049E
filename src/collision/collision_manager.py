@@ -100,6 +100,7 @@ class CollisionManager:
                 node.call_event("exit", collision_data["ending"])
 
     def run(self):
+        print("CollisionManager is running.")
         # Main loop for the collision manager
 
 
