@@ -19,6 +19,8 @@ class GameManager:
         self.render_manager = RenderManager(scene_manager, self.shutdown_event)
         self.collision_manager = CollisionManager(scene_manager, self.shutdown_event)
 
+        self.render_manager.set_collision_manager(self.collision_manager)
+
         # Reload the scene graph
 
         scene_manager.load_scene(scene_manager.get_current_scene().get_name())
@@ -26,15 +28,10 @@ class GameManager:
         self.render_manager.register_mesh_renderers()
         self.collision_manager.register_colliders()
 
-
         self.threads = [
             threading.Thread(target=self.engine.run),
             threading.Thread(target=self.collision_manager.run)
         ]
-
-        print("Starting threads")
-
-
 
         for thread in self.threads:
             thread.daemon = True  # Set the thread as a daemon thread

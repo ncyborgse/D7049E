@@ -1,6 +1,9 @@
 import pybullet as p
 from scipy.spatial.transform import Rotation as R
 import time
+import numpy as np
+
+from readerwriterlock import rwlock
 
 
 class CollisionManager:
@@ -14,6 +17,8 @@ class CollisionManager:
         self.frame_rate = frame_rate  # Set the desired frame rate
         p.setTimeStep(1.0 / self.frame_rate)  # Set the time step for the simulation
         self.shutdown_event = shutdown_event
+        self.click_queue = []  # Queue for click events
+        self.lock = rwlock.RWLockFair()  # Lock for thread-safe access
 
 
 
@@ -33,6 +38,12 @@ class CollisionManager:
                 # Add children to the list for further checking
                 for child in current_node.get_children():
                     nodes_to_check.append(child)
+
+    def queue_click_event(self, ray_from, ray_to):
+
+        with self.lock.gen_wlock():
+            self.click_queue.append((ray_from, ray_to))
+
 
     def check_collisions(self, delta_time=None):        
 
@@ -55,7 +66,6 @@ class CollisionManager:
 
             transform = collider.get_world_transform()
 
-            print(transform)
             rotation_matrix = transform[:3, :3]
             quaternion = R.from_matrix(rotation_matrix).as_quat()
             p.resetBasePositionAndOrientation(id, transform[:3, 3], quaternion)
@@ -99,6 +109,35 @@ class CollisionManager:
                 node.call_event("overlap", collision_data["ongoing"])
             if collision_data["ending"]:
                 node.call_event("exit", collision_data["ending"])
+
+        # Process click events from the queue
+        with self.lock.gen_rlock():
+            click_events = self.click_queue.copy()
+        
+        for event in click_events:
+            ray_from, ray_to = event
+           
+
+            print("Ray from:", ray_from, "Ray to:", ray_to)
+            hits = p.rayTest(ray_from, ray_to, physicsClientId=self.physics_client)
+
+            for hit in hits:
+                # Check if ray hit a registered collider
+                print("Hit:", hit)
+                if hit[0] in ids:
+                    collider = collision_map[hit[0]]["collider"]
+                    node = collider.get_parent()
+                    
+                    # Check if node has clickable component
+
+                    clickable = node.get_component("Clickable")
+                    if clickable:
+                        if clickable.is_enabled():
+                            clickable.click()
+                            break  # Break after the first clickable hit
+
+        with self.lock.gen_wlock():
+            self.click_queue.clear()
 
     def run(self):
         print("CollisionManager is running.")

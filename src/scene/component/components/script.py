@@ -31,7 +31,7 @@ class Script(Component):
 
     def subscribe(self, event_emitter):
         with self.lock.gen_wlock():
-            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit'] # Maybe load from file
+            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit', 'onClick', 'onDamageTaken', 'onHeal', 'onDeath'] # Maybe load from file
 
             # Check if context is set
             if not self.globals:

@@ -51,7 +51,6 @@ class SceneManager:
                 if scene.get_name() == scene_name:
                     self.current_scene_index = index
 
-
                     # Look for the current camera in the scene
 
                     root = scene.get_root()

@@ -12,7 +12,7 @@ class Box(Shape):
         self.depth = depth
 
     def init_shape(self):
-        half_extents = [self.width / 2, self.height / 2, 0.1]
+        half_extents = [self.width / 2, self.height / 2, self.depth / 2]
         self.shape_id = p.createCollisionShape(p.GEOM_BOX, halfExtents=half_extents)
         self.body_id = p.createMultiBody(
             baseMass = 1.0,

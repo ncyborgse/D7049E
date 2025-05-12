@@ -30,6 +30,9 @@ class RenderManager:
         else:
             raise ValueError("MeshRenderer not found in RenderManager.")
 
+    def set_collision_manager(self, collision_manager):
+        self.collision_manager = collision_manager
+
 
     def register_mesh_renderers(self):
         for scene in self.scene_manager.get_scenes():
@@ -94,7 +97,6 @@ class RenderManager:
             return
         
         cameras = self.scene_manager.get_current_cameras()
-        print(cameras)
         if len(cameras) != 1:
             raise ValueError("Expected exactly one camera in scene.")
 
@@ -103,8 +105,6 @@ class RenderManager:
         self.ctx.clear(0.1, 0.1, 0.1)
         self.render_all(view, self.proj)
         self.window.flip()
-        
-
         
 
     def update(self, dt):
@@ -121,6 +121,32 @@ class RenderManager:
         def on_close():
             self.shutdown_event.set()
             pyglet.app.exit()
+
+        @self.window.event
+        def on_mouse_press(x, y, button, modifiers):
+            if button == pyglet.window.mouse.LEFT:
+                # Queue click event to the collision manager
+                if not self.collision_manager:
+                    raise ValueError("Collision manager not set. Please set the collision manager before running.")
+                ncd_x = (x / self.window.width) * 2 - 1 
+                ncd_y = (y / self.window.height) * 2 - 1
+                camera = self.scene_manager.get_current_cameras()[0]
+                view_matrix = self.look_at(camera.get_eye(), camera.get_target(), camera.get_up())
+                projection_matrix = self.perspective_projection(45.0, self.window.width / self.window.height, 0.1, 100.0)
+                inv_view_proj = np.linalg.inv(np.dot(projection_matrix, view_matrix))
+
+                near = np.array([ncd_x, ncd_y, 0.0, 1.0])
+                far = np.array([ncd_x, ncd_y, 1.0, 1.0])
+
+                near_world = np.dot(inv_view_proj, near)
+                far_world = np.dot(inv_view_proj, far)
+
+                near_world /= near_world[3]
+                far_world /= far_world[3]
+
+                ray_from = near_world[:3]
+                ray_to = far_world[:3]
+                self.collision_manager.queue_click_event(ray_from, ray_to)
 
         pyglet.clock.schedule_interval(lambda dt: self.window.dispatch_event('on_draw'), 1/60.0)
         pyglet.app.run()

@@ -51,8 +51,7 @@ class Camera(Component):
             raise ValueError("Target position must contain only numbers.")
 
 
-        if self.get_parent():
-            parent = self.get_parent()
+        parent = self.get_parent()
         with self.lock.gen_wlock():
             target = np.array(target + [1.0])
             if parent:
