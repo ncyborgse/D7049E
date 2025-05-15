@@ -38,7 +38,7 @@ class Box(Shape):
 
     
     @classmethod
-    def from_dict(data):
+    def from_dict(cls, data, scene_manager):
         width = data.get("width", 1.0)
         height = data.get("height", 1.0)
         depth = data.get("depth", 1.0)

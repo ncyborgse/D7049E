@@ -169,6 +169,7 @@ class Node:
             child_node = Node.from_dict(child_data, scene_manager)
             node.add_child(child_node)
         for component_data in data.get("components", []):
+            print(component_data)
             component_type = component_data.get("type")
             if component_type in component_registry:
                 component = component_registry[component_type].from_dict(component_data, scene_manager)

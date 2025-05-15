@@ -11,8 +11,11 @@ class Camera(Component):
         super().__init__(name=name)
 
         self.eye = [0.0, 0.0, 0.0]
+        self.eye = np.array(self.eye + [1.0])
         self.target = [0.0, 0.0, -1.0]
+        self.target = np.array(self.target + [1.0])
         self.up = [0.0, 1.0, 0.0]
+        self.up = np.array(self.up + [0.0])
 
         self.lock = rwlock.RWLockFair()
 
@@ -84,9 +87,18 @@ class Camera(Component):
     def to_dict(self):
         with self.lock.gen_rlock():
             base = super().to_dict()
-            # Update base
+            base.update({
+                "eye": self.eye.tolist(),
+                "target": self.target.tolist(),
+                "up": self.up.tolist()
+            })
+            print("Transforming camera " + self.name + " to dict")
             return base
 
     @classmethod
     def from_dict(cls, data, scene_manager):
-        pass
+        camera = Camera(name=data.get("name", "Camera"))
+        camera.eye = np.array(data.get("eye", [0.0, 0.0, 0.0, 1.0]))[:3]
+        camera.target = np.array(data.get("target", [0.0, 0.0, -1.0, 1.0]))[:3]
+        camera.up = np.array(data.get("up", [0.0, 1.0, 0.0, 0.0]))[:3]
+        return camera

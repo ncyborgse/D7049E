@@ -46,12 +46,10 @@ class Clickable(Component):
             raise RuntimeError("Collider component is not enabled. Clickable cannot function without an enabled Collider.")
 
     def to_dict(self):
-        with self.lock.gen_rlock():
-            return {
-                "name": self.name,
-                "type": self.__class__.__name__,
-                "enabled": self.enabled
-            }
+        base = super().to_dict()
+        base["enabled"] = self.enabled
+        return base
+
 
     @classmethod
     def from_dict(cls, data, scene_manager):

@@ -60,13 +60,13 @@ class Attacker(Component):
             return self.attack_range
 
     def to_dict(self):
+        base = super().to_dict()
         with self.lock.gen_rlock():
-            return {
-                "name": self.name,
-                "type": self.__class__.__name__,
+            base.update({
                 "attack_power": self.attack_power,
                 "attack_range": self.attack_range
-            }
+            })
+            return base
 
     @classmethod
     def from_dict(cls, data, scene_manager):

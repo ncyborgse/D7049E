@@ -1,5 +1,6 @@
 import threading
 
+## FIX LOCKING PROPERLY
 
 class SceneManager:
     def __init__(self):

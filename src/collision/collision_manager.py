@@ -118,12 +118,10 @@ class CollisionManager:
             ray_from, ray_to = event
            
 
-            print("Ray from:", ray_from, "Ray to:", ray_to)
             hits = p.rayTest(ray_from, ray_to, physicsClientId=self.physics_client)
 
             for hit in hits:
                 # Check if ray hit a registered collider
-                print("Hit:", hit)
                 if hit[0] in ids:
                     collider = collision_map[hit[0]]["collider"]
                     node = collider.get_parent()

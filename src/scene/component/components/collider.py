@@ -77,15 +77,17 @@ class Collider(Component):
 
     def get_transform(self):
         with self.lock.gen_rlock():
-            if self.transform is None:
+            transform = self.transform
+            if transform is None or transform.__str__() == "None": # idk why this is needed but it is
                 return np.identity(4)
             return self.transform
     
     def get_world_transform(self):
         parent = self.get_parent()
         node_transform = parent.get_world_transform() if parent else np.identity(4)
+        collider_transform = self.get_transform()
         with self.lock.gen_rlock():
-            return np.dot(node_transform, self.get_transform())
+            return np.dot(node_transform, collider_transform)
     
     def to_dict(self):
         with self.lock.gen_rlock():
@@ -98,7 +100,7 @@ class Collider(Component):
             return base
     
     @classmethod
-    def from_dict(data, scene_manager):
+    def from_dict(cls, data, scene_manager):
         shape_data = data.get("shape")
         collider = Collider(name=data.get("name", "Collider"))
         collider.enabled = data.get("enabled", True)

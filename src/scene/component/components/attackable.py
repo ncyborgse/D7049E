@@ -73,15 +73,15 @@ class Attackable(Component):
         self.alive = False
 
     def to_dict(self):
+        base = super().to_dict()
         with self.lock.gen_rlock():
-            return {
-                "name": self.name,
-                "type": self.__class__.__name__,
+            base.update({
                 "max_health": self.max_health,
                 "health": self.health,
                 "defense": self.defense,
                 "alive": self.alive
-            }
+            })
+            return base
 
     @classmethod
     def from_dict(cls, data, scene_manager):

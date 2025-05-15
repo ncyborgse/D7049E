@@ -74,7 +74,8 @@ class StateManager:
         for scene_name in os.listdir(project_dir):
             if scene_name.endswith(".json"):
                 scene_path = os.path.join(project_dir, scene_name)
-                root = self.node_builder.build(scene_name[:-5], self.scene_manager)
+                print("Building scene:", scene_name[:-5])
+                root = self.node_builder.build(scene_name[:-5])
                 scene = SceneGraph(node=root, name=scene_name[:-5])
                 self.scene_manager.add_scene(scene)
 

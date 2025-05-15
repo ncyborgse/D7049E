@@ -40,6 +40,7 @@ class Component(ABC):
             return self.name
     
     def to_dict(self):
+        print("Transforming component " + self.name + " to dict") 
         with self.lock.gen_rlock():
             return {
                 "name": self.name,

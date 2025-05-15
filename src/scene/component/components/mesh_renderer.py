@@ -18,7 +18,7 @@ class MeshRenderer(Component):
     def __init__(self, obj_path=DEFAULT_MODEL_PATH, name="MeshRenderer"):
         super().__init__(name=name)
         self.obj_path = obj_path
-        self.enabled = False
+        self.enabled = True
         self.not_created = True
         self.transform = np.identity(4)
         self.lock = rwlock.RWLockFair()
@@ -143,9 +143,23 @@ class MeshRenderer(Component):
     def to_dict(self):
         with self.lock.gen_rlock():
             base = super().to_dict()
-            # Update base
+            base.update({
+                "obj_path": self.obj_path,
+                "enabled": self.enabled,
+                "transform": self.transform.tolist() if self.transform is not None else None
+            })
             return base
 
     @classmethod
-    def from_dict(self, data, scene_manager):
-        pass
+    def from_dict(cls, data, scene_manager):
+        obj_path = data.get("obj_path", DEFAULT_MODEL_PATH)
+        enabled = data.get("enabled", True)
+        transform = np.array(data.get("transform", np.identity(4)))
+
+        mesh_renderer = cls(obj_path=obj_path)
+        mesh_renderer.enabled = enabled
+        mesh_renderer.transform = transform
+
+        return mesh_renderer
+
+        
