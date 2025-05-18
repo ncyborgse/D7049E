@@ -12,6 +12,22 @@ class Grid(Component):
     def subscribe(self, event_emitter):
         pass
 
-    def initialize(self, width, height, tile_edges, tile_height, tile_width):
-        # Create tiles as children to the parent node
-        pass
+    def to_dict(self):
+        base = super().to_dict()
+        return base
+
+    def from_dict(cls, data, scene_manager):
+        name = data.get("name", "Grid")
+        grid = cls(name=name)
+        return grid
+
+                
+
+    
+
+
+
+
+
+
+    

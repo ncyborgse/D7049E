@@ -24,6 +24,12 @@ class Node:
             parent_node.add_child(self)
             self.parent = parent_node
 
+    def detach(self):
+        with self.lock.gen_wlock():
+            if self.parent:
+                self.parent.remove_child(self)
+                self.parent = None
+
     def get_name(self):
         with self.lock.gen_rlock():
             return self.name
@@ -169,7 +175,7 @@ class Node:
             child_node = Node.from_dict(child_data, scene_manager)
             node.add_child(child_node)
         for component_data in data.get("components", []):
-            print(component_data)
+            #print(component_data)
             component_type = component_data.get("type")
             if component_type in component_registry:
                 component = component_registry[component_type].from_dict(component_data, scene_manager)

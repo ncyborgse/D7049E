@@ -5,7 +5,6 @@ sys.path.append(os.path.abspath(os.path.join(BASE_DIR, '../../../')))    # Fix t
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "..", ".."))
 DEFAULT_MODEL_PATH = os.path.join(PROJECT_ROOT, "assets", "models", "banana duck.obj")
 
-import threading
 import numpy as np
 from pywavefront import Wavefront
 from scene.component.component import Component

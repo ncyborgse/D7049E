@@ -10,7 +10,7 @@ class Tile(Component):
         self.num_neighbors = num_neighbors
         self.x = x
         self.y = y
-        self.neighbors = []
+        self.neighbors = [None] * num_neighbors  # Initialize neighbors list with None
         self.movement_cost = 1.0
         self.see_through = True
 

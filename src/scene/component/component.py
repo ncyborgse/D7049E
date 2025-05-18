@@ -1,6 +1,5 @@
 
 from abc import ABC, abstractmethod
-import threading
 from readerwriterlock import rwlock
 
 class Component(ABC):
