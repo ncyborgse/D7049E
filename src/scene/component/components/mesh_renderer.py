@@ -15,11 +15,14 @@ from readerwriterlock import rwlock
 
 @register_component
 class MeshRenderer(Component):
-    def __init__(self, obj_path=DEFAULT_MODEL_PATH, name="MeshRenderer"):
+    def __init__(self, obj_path=None, vertices = None, indices = None, name="MeshRenderer"):
         super().__init__(name=name)
         self.obj_path = obj_path
+        self.vertex_input = vertices
+        self.vertex_indices_input = indices
         self.enabled = True
         self.not_created = True
+        
         self.transform = np.identity(4)
         self.lock = rwlock.RWLockFair()
 
@@ -27,10 +30,25 @@ class MeshRenderer(Component):
     def create(self, ctx):
         self.enable()
 
+        with self.lock.gen_rlock():
+            path = self.obj_path
+
         with self.lock.gen_wlock():
             self.ctx = ctx
+        if path is None and self.vertex_input is not None and self.vertex_indices_input is not None:
+            vertices, indices = self._prepare_from_raw()
+        elif path:
             self.scene = Wavefront(self.obj_path, collect_faces=True)
-            self.vertices, self.vertex_indices = self._prepare_vertex_data()
+            vertices, indices = self._prepare_vertex_data()
+        else:
+            raise ValueError("Either obj_path or vertex_input and vertex_indices_input must be provided.")
+
+        with self.lock.gen_wlock():
+
+
+            self.vertices = vertices
+            self.indices = indices
+
             self.vbo = self.ctx.buffer(self.vertices.tobytes())
             self.program = self._create_shader_program()
             self.vao = self.ctx.vertex_array(self.program, [(self.vbo, '3f 3f', 'in_vert', 'in_normal')])
@@ -98,6 +116,42 @@ class MeshRenderer(Component):
             vertices.extend(normals[vi])
 
         return np.array(vertices, dtype='f4'), vertex_indices
+    
+    def _prepare_from_raw(self):
+        with self.lock.gen_rlock():
+            vertex_list = self.vertex_input
+            vertex_indices = self.vertex_indices_input
+        
+        accum_normals = np.zeros((len(vertex_list), 3), dtype='f4')
+
+        for i in range(0, len(vertex_indices), 3):
+            face  = vertex_indices[i:i+3]
+            v1 = np.array(vertex_list[face[0]], dtype='f4')
+            v2 = np.array(vertex_list[face[1]], dtype='f4')
+            v3 = np.array(vertex_list[face[2]], dtype='f4')
+
+            edge1 = v2 - v1
+            edge2 = v3 - v1
+            normal = np.cross(edge1, edge2)
+            norm_len = np.linalg.norm(normal)
+            if norm_len == 0:
+                continue
+            normal /= norm_len
+            for vi in face:
+                accum_normals[vi] += normal
+        
+        normals = []
+        for n in accum_normals:
+            norm_len = np.linalg.norm(n)
+            normals.append(n / norm_len if norm_len != 0 else np.array([0.0, 0.0, 1.0], dtype='f4'))
+
+        vertices = []
+        for vi in vertex_indices:
+            vertices.extend(vertex_list[vi])
+            vertices.extend(normals[vi])
+
+        return np.array(vertices, dtype='f4'), vertex_indices
+
 
     def _create_shader_program(self):
 
@@ -121,7 +175,10 @@ class MeshRenderer(Component):
                 out vec4 f_color;
                 void main() {
                     vec3 normal = normalize(frag_normal);
-                    float brightness = max(dot(normal, normalize(light_dir)), 0.0);
+                    float diffuse = max(dot(normal, normalize(light_dir)), 0.0);
+
+                    float ambient = 0.1;
+                    float brightness = ambient + (1.0 - ambient) * diffuse;
                     f_color = vec4(vec3(0.4, 0.6, 0.9) * brightness, 1.0);
                 }
             '''

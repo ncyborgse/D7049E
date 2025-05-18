@@ -161,7 +161,7 @@ class Node:
 
     @classmethod
     def from_dict(cls, data, scene_manager):
-        print(component_registry)
+        #print(component_registry)
         name = data.get("name", "Node")
         transform = np.array(data.get("transform", np.identity(4)))
         node = Node(name, transform)

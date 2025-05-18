@@ -31,10 +31,41 @@ node2 = Node("Node2", parent=node1)
 node3 = Node("Node3", transform=np.identity(4))
 
 # Create mesh renderers and add them to the nodes
-mesh1 = MeshRenderer("assets/models/Trollboyobj.obj")
-mesh2 = MeshRenderer("assets/models/banana duck.obj")
+vertices = np.array([
+    -1, -1, -1,
+    1, -1, -1,
+    1,  1, -1,
+    -1,  1, -1,
+    -1, -1,  1,
+    1, -1,  1,
+    1,  1,  1,
+    -1,  1,  1
+
+], dtype='f4')
+
+vertices = np.array(vertices, dtype='f4').reshape(-1, 3)  # Reshape to (n, 3) where n is the number of vertices
+
+indices = np.array([    
+    0, 1, 3, 3, 1, 2,
+    1, 5, 2, 2, 5, 6,
+    5, 4, 6, 6, 4, 7,
+    4, 0, 7, 7, 0, 3,
+    3, 2, 7, 7, 2, 6,
+    4, 5, 0, 0, 5, 1], dtype='i4')
+
+indices = np.array([    
+    0, 3, 1, 3, 2, 1,
+    1, 2, 5, 2, 6, 5,
+    5, 6, 4, 6, 7, 4,
+    4, 7, 0, 7, 3, 0,
+    3, 7, 2, 7, 6, 2,
+    4, 0, 5, 0, 1, 5], dtype='i4')
+
+mesh1 = MeshRenderer(vertices=vertices, indices=indices)
+mesh2 = MeshRenderer(vertices=vertices, indices=indices)
 camera = Camera()
-camera.set_eye([7.0, 6.0, 5.0])
+camera.set_eye([0, -5, -5])
+camera.set_target([0, 0, 0])
 node1.add_component(mesh1)
 node2.add_component(mesh2)
 node3.add_component(camera)
@@ -48,14 +79,14 @@ scene_graph.add_node(node3)
 # Set the transforms for the nodes
 # Note: The transforms are in column-major order for OpenGL
 transform1 = np.array([
-    [ 0.5, 0.0, 0.0,  -5],
-    [ 0.0, 0.5, 0.0, -10],
-    [ 0.0, 0.0, 0.5,   0],
-    [ 0.0, 0.0, 0.0,   1]
+    [ 0.5, 0.0, 0.0, 0],
+    [ 0.0, 0.5, 0.0, 0],
+    [ 0.0, 0.0, 0.5, 0],
+    [ 0.0, 0.0, 0.0, 1]
 ], dtype='f4')  # or dtype='float32'
 transform2 = np.array([
-    [ 1, 0, 0,  0],
-    [ 0, 1, 0, -5],
+    [ 1, 0, 0,  -3],
+    [ 0, 1, 0,  0],
     [ 0, 0, 1,  0],
     [ 0, 0, 0,  1]
 ], dtype='f4')  # or dtype='float32'

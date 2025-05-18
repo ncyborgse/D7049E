@@ -19,6 +19,7 @@ class RenderManager:
         self.window = pyglet.window.Window(800, 600, "New World", vsync=True)
         self.ctx = moderngl.create_context()
         self.ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
+        #self.ctx.disable(moderngl.CULL_FACE)    # Disable backface culling
         self.ctx.enable(moderngl.DEPTH_TEST)     # Enable depth testing
 
     def add_mesh(self, mesh_renderer: MeshRenderer):
@@ -62,9 +63,6 @@ class RenderManager:
         return proj
 
     def look_at(self, eye, target, up):
-        eye = np.array(eye, dtype='f4')
-        target = np.array(target, dtype='f4')
-        up = np.array(up, dtype='f4')
 
         f = target - eye
         f = f / np.linalg.norm(f)
@@ -82,7 +80,7 @@ class RenderManager:
         return view
 
 
-    def render_all(self, view_matrix, projection_matrix, light_dir=(1.0, 1.0, 1.0), delta_time=None):
+    def render_all(self, view_matrix, projection_matrix, light_dir=(0, 0, -5), delta_time=None):
         for mesh in self.meshes:
             if mesh.not_created:
                 mesh.create(self.ctx)
@@ -102,7 +100,7 @@ class RenderManager:
 
         camera = cameras[0]
         view = self.look_at(camera.get_eye(), camera.get_target(), camera.get_up())
-        self.ctx.clear(0.1, 0.1, 0.1)
+        self.ctx.clear(0.2, 0.2, 0.2)
         self.render_all(view, self.proj)
         self.window.flip()
         

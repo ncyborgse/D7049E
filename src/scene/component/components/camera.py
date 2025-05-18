@@ -11,11 +11,8 @@ class Camera(Component):
         super().__init__(name=name)
 
         self.eye = [0.0, 0.0, 0.0]
-        self.eye = np.array(self.eye + [1.0])
         self.target = [0.0, 0.0, -1.0]
-        self.target = np.array(self.target + [1.0])
         self.up = [0.0, 1.0, 0.0]
-        self.up = np.array(self.up + [0.0])
 
         self.lock = rwlock.RWLockFair()
 
@@ -43,9 +40,9 @@ class Camera(Component):
             eye = np.array(eye + [1.0])
             if self.get_parent():
                 world_eye = self.get_parent().transform @ eye
-                self.eye = world_eye[:3]
+                self.eye = np.array(world_eye[:3])
             else:
-                self.eye = eye[:3]
+                self.eye = np.array(eye[:3])
 
     def set_target(self, target):
         if not isinstance(target, list) or len(target) != 3:
@@ -59,9 +56,9 @@ class Camera(Component):
             target = np.array(target + [1.0])
             if parent:
                 world_target = parent.transform @ target
-                self.target = world_target[:3]
+                self.target = np.array(world_target[:3])
             else:
-                self.target = target[:3]
+                self.target = np.array(target[:3])
 
     def set_up(self, up):
         if not isinstance(up, list) or len(up) != 3:
@@ -76,9 +73,9 @@ class Camera(Component):
             up = np.array(up + [0.0])
             if parent:
                 world_up = parent.transform @ up
-                self.up = world_up[:3]
+                self.up = np.array(world_up[:3])
             else:
-                self.up = up[:3]
+                self.up = np.array(up[:3])
 
 
     def subscribe(self, event_emitter):
@@ -98,7 +95,7 @@ class Camera(Component):
     @classmethod
     def from_dict(cls, data, scene_manager):
         camera = Camera(name=data.get("name", "Camera"))
-        camera.eye = np.array(data.get("eye", [0.0, 0.0, 0.0, 1.0]))[:3]
-        camera.target = np.array(data.get("target", [0.0, 0.0, -1.0, 1.0]))[:3]
-        camera.up = np.array(data.get("up", [0.0, 1.0, 0.0, 0.0]))[:3]
+        camera.eye = np.array(data.get("eye", [0.0, 0.0, 0.0]))[:3]
+        camera.target = np.array(data.get("target", [0.0, 0.0, -1.0]))[:3]
+        camera.up = np.array(data.get("up", [0.0, 1.0, 0.0]))[:3]
         return camera
