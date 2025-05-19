@@ -36,8 +36,13 @@ class ProjectSelectionWindow(Window):
             #dpg.add_same_line()
             dpg.add_button(label="Cancel", callback=lambda: dpg.configure_item("new_project_window", show=False))
 
-        
+
+    def select_project_name(self):
+        # Show the new project window when the button is clicked
+        dpg.configure_item("new_project_window", show=True)
+
     def load_project(self, project_name):
+        print("project selection window/load project\n")
         # Load the project using the state manager
         print(f"Loading project: {project_name}")
         self.state_manager.load_project(project_name)
@@ -45,16 +50,9 @@ class ProjectSelectionWindow(Window):
         self.unload()
         self.on_project_loaded()
 
-    def select_project_name(self):
-        # Show the new project window when the button is clicked
-        dpg.configure_item("new_project_window", show=True)
-
     def create_new_project(self, project_name):
+        print("project selection window/create new project\n")
+
         # Create a new project using the state manager
         self.state_manager.new_project(project_name)
-        self.state_manager.load_project(project_name)
-
-        self.unload()
-        self.on_project_loaded()
-
-        
+        self.load_project(project_name)

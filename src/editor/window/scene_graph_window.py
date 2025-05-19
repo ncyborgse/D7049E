@@ -10,9 +10,12 @@ class SceneGraphWindow(Window):
         super().__init__(name, width, height)
         self.inspector_window = inspector_window
         self.selected_scene_graph = scene_manager.get_current_scene()
+        print("debug | (in SceneGraphWindow) SceneManager.get_current_scene(): ", scene_manager.get_current_scene())
         print("SceneGraphWindow initialized with scene graph:", self.selected_scene_graph)
 
     def load_scene_graph(self, scene_graph):
+        print("scene graph window/load scene graph\n")
+
         self.selected_scene_graph = scene_graph
         self.refresh_scene_graph_window()
 

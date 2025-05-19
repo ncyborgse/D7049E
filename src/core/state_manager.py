@@ -2,7 +2,7 @@ from core.config_manager import ConfigManager
 from core.scene_manager import SceneManager
 from scene.objects.node_builder import NodeBuilder
 from scene.scene_graph import SceneGraph
-from pathlib import Path
+#from pathlib import Path
 import os
 
 
@@ -19,6 +19,7 @@ class StateManager:
         self.scene_manager = scene_manager
 
     def new_project(self, project_name):
+        print("debug | state manager/new project\n")
         # Get the project path from the config manager
         project_path = self.config_manager.get_config()["projects_path"]
         
@@ -33,7 +34,7 @@ class StateManager:
         new_scene = SceneGraph(name=f"{project_name}_scene")
         self.scene_manager.add_scene(new_scene)
         self.scene_manager.load_scene(new_scene.get_name())
-        self.scene_manager.set_current_scene(new_scene)
+        # self.scene_manager.set_current_scene(new_scene) # already exists in load_scene
 
     def save_project(self):
         if self.current_project is None:
@@ -57,6 +58,8 @@ class StateManager:
             
 
     def load_project(self, project_name):
+        print("debug | state manager/load project\n")
+
         if self.scene_manager is None:
             raise ValueError("No scene manager is set.")
         

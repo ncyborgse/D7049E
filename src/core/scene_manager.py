@@ -10,17 +10,24 @@ class SceneManager:
         self.lock = threading.RLock()
 
     def add_scene(self, scene):
+        print("debug | scene manager/add scene\n")
         with self.lock:
             if scene not in self.scenes:
                 self.scenes.append(scene)
+                self.set_current_scene(scene)
                 if self.current_scene_index is None:
                     self.current_scene_index = 0
+        print("debug | SceneManager's scenes in add scene: ", self.scenes, "\n")
+        print("debug | SceneManager current_scene_index: ", self.current_scene_index, "\n")
 
     def get_scenes(self):
+        print("debug | SceneManager / get scenes unlocked: ", self.scenes, "\n")
         with self.lock:
+            print("debug | SceneManager get scenes LOCK: ", self.scenes, "\n")
             return self.scenes
 
     def get_current_scene(self):
+        #print("debug | scene manager/get current scene: \n", self.scenes[self.current_scene_index])
         with self.lock:
             if self.current_scene_index is not None:
                 return self.scenes[self.current_scene_index]
@@ -69,6 +76,9 @@ class SceneManager:
                             nodes_to_check.append(child)
 
                         self.current_cameras = list_of_cameras
+
+                    print("debug | (in load_scene) self.current_scene_index: ", self.current_scene_index, "\n")
+                    print("debug | (in load_scene) return scene: ", scene, "\n")
 
                     return scene
             raise ValueError(f"Scene '{scene_name}' not found.")
