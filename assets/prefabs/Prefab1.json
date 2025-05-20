@@ -27,12 +27,5 @@
         ]
     ],
     "children": [],
-    "components": [
-        {
-            "name": "Script1",
-            "type": "Script",
-            "source": "src/test/testScript.lua",
-            "public_vars": {}
-        }
-    ]
+    "components": []
 }

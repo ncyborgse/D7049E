@@ -43,8 +43,26 @@ class SceneGraphWindow(Window):
                 print("debug | SceneGraphWindow/Refresh... inside the while-loop")
                 node = nodes.pop(0)
                 print("debug | SceneGraphWindow/Refresh... at Node: ", node)
-                node_element = SceneGraphElement( node, inspector_callback=lambda: self.inspector_window.refresh_inspector(node), refresh_callback=self.refresh_scene_graph_window)
+
+                node_element = SceneGraphElement( node, 
+                                                 lambda n=node: self.inspector_window.refresh_inspector(n), 
+                                                 refresh_callback=self.refresh_scene_graph_window
+                                                )
+
                 self.node_elements.append(node_element)
+
+                if node.get_parent():
+                    parent_node = node.get_parent()
+
+                    if parent_node == self.selected_scene_graph.get_root():
+                        self.scene_graph_root_element.add_child(node_element)
+                        node_element.set_parent(self.scene_graph_root_element)
+
+                    for parent_node_element in self.node_elements:
+                        if parent_node_element.node == parent_node:
+                            parent_node_element.add_child(node_element)
+                            node_element.set_parent(parent_node_element)
+
 
                 for child in node.get_children():
                     nodes.append(child)
@@ -71,9 +89,9 @@ class SceneGraphWindow(Window):
         # Draw the root scene graph element if it exists
         if hasattr(self, 'scene_graph_root_element'):
             self.scene_graph_root_element.draw_self()
-        
-        for node_element in self.node_elements:
-            node_element.draw_self()
+
+        #for node_element in self.node_elements:
+        #    node_element.draw_self()
 
         # Add the "Add Node" element
         dpg.add_separator(parent=self.name)

@@ -96,8 +96,6 @@ class StateManager:
                 root = self.node_builder.build(scene_name[:-5])
                 scene = SceneGraph(node=root, name=scene_name[:-5])
                 self.scene_manager.add_scene(scene)
-
-  
         
         # Create grid system here to be able to load scene and detect grids
 
@@ -119,3 +117,4 @@ class StateManager:
         
         projects = [d for d in os.listdir(project_path) if os.path.isdir(os.path.join(project_path, d))]
         return projects
+    

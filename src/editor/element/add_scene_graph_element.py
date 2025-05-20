@@ -29,19 +29,20 @@ class AddSceneGraphElement(DisplayElement):
     def _on_add_node(self, sender, app_data, user_data=None):
         if hasattr(self, 'selected_prefab') and self.selected_prefab:
             try:
-                print("debug | AddSceneGraphElement/_on_add_node begining")
-                #node = self.node_builder.build(self.selected_prefab, self.scene_manager)
-                node = self.node_builder.build(self.selected_prefab)
+                print("\n", "debug | AddSceneGraphElement/_on_add_node begining")
 
+                node = self.node_builder.build(self.selected_prefab)
                 print("debug | AddSceneGraphElement/_on_add_node  after build()")
+
                 scene_graph = self.scene_manager.get_current_scene()
                 print("debug | AddSceneGraphElement/_on_add_node  adfter get_current_scene()")
 
                 if scene_graph and scene_graph.get_root():
-
                     print("debug | AddSceneGraphElement/_on_add_node  in if statement")
+
                     scene_graph.get_root().add_child(node)
                     print(f"Added node '{node.get_name()}' to scene graph")
+                    print("SceneGraph's children: ", scene_graph.get_root().get_children(), "\n")
 
                     if self.refresh_callback:
                         self.refresh_callback()
@@ -56,13 +57,8 @@ class AddSceneGraphElement(DisplayElement):
         else:
             print("No prefab selected!")
 
-    #def _add_scene_graph_element(self, node):
-    #    scene_graph_element = SceneGraphElement( node, self.inspector_callback, self.refresh_callback)
-    #    scene_root_node = self.scene_manager.get_current_scene().get_root()
 
-    
 
-            
 '''
 def _on_add_node(self, sender, app_data, user_data=None):
         if self.selected_prefab:
