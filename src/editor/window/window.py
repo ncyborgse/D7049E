@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import dearpygui.dearpygui as dpg
 from editor.element.display_element import DisplayElement
 
+
 class Window(ABC):
     def __init__(self, name, width=1200, height=600):
         self.name = name
@@ -38,6 +39,7 @@ class Window(ABC):
                 else:
                     with dpg.group(tag=child.name, parent=self.name):
                         child.load()
+            self.is_opened = True
         else:
             print(f"Window '{self.name}' is already loaded.")
 
@@ -56,6 +58,7 @@ class Window(ABC):
     @abstractmethod
     def draw_self(self, parent=None):
         pass
+
 
     '''
     @abstractmethod

@@ -33,6 +33,10 @@ class Node:
     def get_name(self):
         with self.lock.gen_rlock():
             return self.name
+        
+    def get_children(self):
+        with self.lock.gen_rlock():
+            return self.children
 
     def rename(self, new_name):
         with self.lock.gen_wlock():

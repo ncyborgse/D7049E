@@ -1,31 +1,11 @@
-from core.global_scene_manager import scene_manager
-from core.state_manager import StateManager
-from editor.display_manager import DisplayManager
-from editor.window.project_selection_window import ProjectSelectionWindow
+from editor import init_editor
 import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 
 def main():
-    if __name__ == "__main__":
-        # Start the editor
-        state_manager = StateManager()
-
-        state_manager.set_scene_manager(scene_manager)
-
-        # Create an instance of InterfaceManager   
-        manager = DisplayManager()
-
-        main_window = ProjectSelectionWindow("Project Selection Window", state_manager)
-
-        # Add the window to the manager
-        manager.add_window(main_window)
-
-        manager.load_context()
-
-        manager.load_window("Project Selection Window")
-
-        manager.load_gui()
-
+    init_editor.init_editor()
 
 if sys.version_info[:3] != (3, 11, 0):
     sys.exit("This project requires Python 3.11.0")
