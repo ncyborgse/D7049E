@@ -7,11 +7,11 @@ from scene.objects.node_builder import NodeBuilder
 class AddSceneGraphElement(DisplayElement):
     def __init__(self, inspector_callback=None, refresh_callback=None, width=800, height=30):
         super().__init__("AddNode", width, height)
-        self.node_builder = NodeBuilder("src/assets/prefabs")
+        self.node_builder = NodeBuilder("assets/prefabs")
         self.inspector_callback = inspector_callback 
         self.refresh_callback = refresh_callback
         self.scene_manager = scene_manager
-        self.selected = False
+        self.selected_prefab = False
 
     def draw_self(self):
         dpg.add_text("Add Node to Scene Graph")
@@ -21,10 +21,11 @@ class AddSceneGraphElement(DisplayElement):
 
     def _on_prefab_selected(self, sender, app_data, user_tag):
         self.selected_prefab = app_data
-    
+
     def _on_add_node(self, sender, app_data, user_tag):
         if self.selected_prefab:
-            node = self.node_builder.build(self.selected_prefab, self.scene_manager)
+            print("debug | AddSceneGraphElement (in _on_add_node) Adding a node!")
+            node = self.node_builder.build(self.selected_prefab)
             scene_graph = self.scene_manager.get_current_scene()
             scene_graph.get_root().add_child(node)
 

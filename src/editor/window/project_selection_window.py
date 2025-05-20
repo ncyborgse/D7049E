@@ -13,7 +13,7 @@ class ProjectSelectionWindow(Window):
         self.on_project_loaded = on_project_loaded
 
 
-    def draw_self(self):
+    def draw_self(self, parent=None):
         with dpg.group(horizontal=True):
             dpg.add_button(label="Create New Project", callback=lambda: self.select_project_name()) 
             dpg.add_button(label="Exit Program", callback=lambda: dpg.stop_dearpygui())
