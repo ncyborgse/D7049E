@@ -3,6 +3,7 @@ from core.state_manager import StateManager
 from core.global_scene_manager import scene_manager
 from core.render_manager import RenderManager
 from collision.collision_manager import CollisionManager
+from core.grid_system import GridSystem
 import pyglet
 import time
 
@@ -18,6 +19,7 @@ class GameManager:
         self.engine = Engine(scene_manager, self.shutdown_event)
         self.render_manager = RenderManager(scene_manager, self.shutdown_event)
         self.collision_manager = CollisionManager(scene_manager, self.shutdown_event)
+        self.grid_system = GridSystem()
 
         self.render_manager.set_collision_manager(self.collision_manager)
 
@@ -27,6 +29,7 @@ class GameManager:
         
         self.render_manager.register_mesh_renderers()
         self.collision_manager.register_colliders()
+        self.grid_system.connect_grid()
 
         self.threads = [
             threading.Thread(target=self.engine.run),

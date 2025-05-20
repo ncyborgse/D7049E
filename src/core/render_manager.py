@@ -7,6 +7,7 @@ import moderngl
 import pyglet
 import numpy as np #from pyrr import Matrix44
 from scene.component.components.mesh_renderer import MeshRenderer
+from core.global_scene_manager import scene_manager
 
 
 class RenderManager:
@@ -15,8 +16,11 @@ class RenderManager:
         self.scene_manager = scene_manager
         self.game_manager = game_manager
         self.meshes = []
+        self.prev_keys = []
 
         self.window = pyglet.window.Window(800, 600, "New World", vsync=True)
+        self.keys = pyglet.window.key.KeyStateHandler()
+        self.window.push_handlers(self.keys)
         self.ctx = moderngl.create_context()
         self.ctx.enable(moderngl.CULL_FACE)      # Enable backface culling
         #self.ctx.disable(moderngl.CULL_FACE)    # Disable backface culling
@@ -49,6 +53,7 @@ class RenderManager:
                 # Add children to the list for further checking
                 for child in current_node.get_children():
                     nodes_to_check.append(child)
+
 
 
     def perspective_projection(self, fov_deg, aspect, near, far):
@@ -106,7 +111,38 @@ class RenderManager:
         
 
     def update(self, dt):
-        self.window.invalid = True
+        
+        curr_keys = []
+
+        root = scene_manager.get_current_scene().get_root()
+
+        for k in self._all_keys():
+            if self.keys[k]:
+                key = pyglet.window.key.symbol_string(k)
+                curr_keys.append(key)
+
+        #print("Keys pressed: " + str(curr_keys))
+        for key in curr_keys:
+            if key not in self.prev_keys:
+                root.call_event_rec("onKeyPress", key)
+            else:
+                root.call_event_rec("onKeyHold", key, dt)
+        
+        for key in self.prev_keys:
+            if key not in curr_keys:
+                root.call_event_rec("onKeyRelease", key)
+
+        self.prev_keys = curr_keys
+
+        
+        
+        
+        
+    def _all_keys(self):
+        return [getattr(pyglet.window.key, k) for k in dir(pyglet.window.key) if not k.startswith('__') and not k.startswith('_') and isinstance(getattr(pyglet.window.key, k), int)]
+
+
+        
 
     def run(self):
         self.proj = self.perspective_projection(45.0, 800 / 600, 0.1, 100.0)
@@ -119,6 +155,22 @@ class RenderManager:
         def on_close():
             self.shutdown_event.set()
             pyglet.app.exit()
+        '''
+        @self.window.event
+        def on_key_press(symbol, modifiers):
+            if self.engine is None:
+                raise ValueError("Engine not set, cannot handle key press events.")
+            # Convert symbol to string for easier handling
+            key = pyglet.window.key.symbol_string(symbol)
+            self.engine.queue_key_event(key, release = False)
+
+        @self.window.event
+        def on_key_release(symbol, modifiers):
+            if self.engine is None:
+                raise ValueError("Engine not set, cannot handle key press events.")
+            key = pyglet.window.key.symbol_string(symbol)
+            self.engine.queue_key_event(key, release = True)
+        ''' 
 
         @self.window.event
         def on_mouse_press(x, y, button, modifiers):
@@ -147,6 +199,7 @@ class RenderManager:
                 self.collision_manager.queue_click_event(ray_from, ray_to)
 
         pyglet.clock.schedule_interval(lambda dt: self.window.dispatch_event('on_draw'), 1/60.0)
+        pyglet.clock.schedule_interval(self.update, 1/300.0)  # Update every 1/60 seconds
         pyglet.app.run()
 
         '''

@@ -2,7 +2,10 @@ import numpy as np
 from scene.objects.node import Node
 from scene.component.components.tile import Tile
 from scene.component.components.mesh_renderer import MeshRenderer
+from core.global_scene_manager import scene_manager
 
+import heapq
+import itertools
 
 class GridSystem:
     def __init__(self):
@@ -19,6 +22,10 @@ class GridSystem:
             raise ValueError("Grid is not set. Please set the grid before updating.")
         # Create tiles as children to the parent node
         
+
+        self.grid.set_size(width, height)
+        self.grid.set_tile_size(tile_width, tile_height)
+        self.grid.set_tile_neighbors(tile_edges)
         # Remove all current child tiles
 
         for child in self.grid.get_parent().get_children():
@@ -103,12 +110,136 @@ class GridSystem:
     def is_visible(self, tile1, tile2):
         if self.grid is None:
             raise ValueError("Grid is not set. Please set the grid before checking visibility.")
+
+        # Search cardinal directions for tile2 from tile1
+
+        for i in range(4):
+            while tile1.get_neighbors()[i] is not None and tile1.get_neighbors()[i].is_see_through():
+                if tile1.get_neighbors()[i] == tile2:
+                    return True
+                tile1 = tile1.get_neighbors()[i]
+        return False
     
     def navigate(self, tile1, tile2):
         if self.grid is None:
             raise ValueError("Grid is not set. Please set the grid before navigating.")
-        # Implement navigation logic here
-        pass
+        if tile1==tile2:
+            return [tile1]
+        
+        # A* pathfinding algorithm
+
+
+        open_set = []
+        counter = itertools.count()
+        heapq.heappush(open_set, (0, next(counter), tile1)) # Tie breaker counter
+        visited = set()
+
+        came_from = {}
+        g_score = {tile1: 0} 
+        while open_set:
+            _, _, current = heapq.heappop(open_set)
+
+            if current in visited:
+                continue
+            visited.add(current)
+
+            if current == tile2:
+                path = [current]
+                while current in came_from:
+                    current = came_from[current]
+                    path.append(current)
+                path.reverse()
+                return path
+            
+            for neighbor in current.get_neighbors():
+                if neighbor is None:
+                    continue
+                move_cost = neighbor.get_movement_cost()
+                new_cost = g_score[current] + move_cost
+
+                if neighbor not in g_score or new_cost < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = new_cost
+                    heapq.heappush(open_set, (new_cost, next(counter), neighbor))
+
+        return None
+    
+    def connect_grid(self):
+        # Find grid objects in all scenes
+
+        # Ensure there is only one grid per scene
+        scenes = scene_manager.get_scenes()
+        for scene in scenes:
+            root = scene.get_root()
+            nodes_to_check = [root]
+            grids = []
+            while nodes_to_check:
+                current_node = nodes_to_check.pop()
+                grid = current_node.get_component("Grid")
+                if grid:
+                    grids.append(grid)
+
+                # Add children to the list for further checking
+
+                for child in current_node.get_children():
+                    nodes_to_check.append(child)
+
+            if len(grids) > 1:
+                raise ValueError("Only one grid per scene is supported.")
+            if not grids:
+                break
+            grid = grids[0]
+            
+            width, height = grid.get_size()
+            num_neighbors = grid.get_tile_neighbors()
+
+            if num_neighbors != 4:
+                raise ValueError("Only 4 edges are supported for now.")
+            
+            children = grid.get_parent().get_children()
+
+            tiles = []
+
+            for child in children:
+                child.get_components()
+                for component in child.get_components():
+                    if isinstance(component, Tile):
+                        tiles.append(component)
+                        break
+
+
+            # Attach tiles to neighboring nodes
+
+            # Assuming order of tiles is preserved when loaded
+
+            # Indices are 0 = left, 1 = up, 2 = right, 3 = down
+
+            for i in range(width):
+                for j in range(height):
+                    tile = tiles[i * height + j]
+
+                    if i > 0:
+                        tile.add_neighbor(tiles[(i - 1) * height + j], 0)
+                    if j < height - 1:
+                        tile.add_neighbor(tiles[i * height + (j + 1)], 1)
+                    if i < width - 1:
+                        tile.add_neighbor(tiles[(i + 1) * height + j], 2)
+                    if j > 0:
+                        tile.add_neighbor(tiles[i * height + (j - 1)], 3)
+
+
+            
+            
+
+
+
+
+
+
+
+
+
+         
         
 
     

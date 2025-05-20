@@ -46,6 +46,12 @@ class LuaProxy:
         py_kwargs = {k: self.lua_to_py(v) for k, v in kwargs.items()}
         result = self.obj(*py_args, **py_kwargs)
         return self.py_to_lua(result)
+    
+    def __len__(self):
+        if hasattr(self.obj, '__len__'):
+            return len(self.obj)
+        else:
+            raise TypeError(f"Object '{self.obj}' does not support len()")
 
         
     def lua_to_py(self, value):
@@ -94,6 +100,8 @@ class LuaProxy:
             return tbl
         elif hasattr(value, '__dict__') or callable(value):
             return LuaProxy(value, self.lua)
-        else:
+        elif isinstance(ValueError, (int, float, str, bool, type(None))):
             return value
+        else:
+            return LuaProxy(value, self.lua)
 

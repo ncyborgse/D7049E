@@ -45,10 +45,11 @@ class Node:
         event_emitter.emit(event, *args, **kwargs)
 
     def call_event_rec(self, event, *args, **kwargs):
+        #print("Calling event " + event + " on node " + self.name)
         with self.lock.gen_rlock():
             children = list(self.children)
         self.call_event(event, *args, **kwargs)
-        for child in self.children:
+        for child in children:
             child.call_event_rec(event, *args, **kwargs)
 
     def subscribe_children_rec(self):

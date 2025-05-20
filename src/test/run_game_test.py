@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-project = "TestProject"
+project = "GridTestProject"
 
 # Get run_game.py path from src/core/run_game.py
 

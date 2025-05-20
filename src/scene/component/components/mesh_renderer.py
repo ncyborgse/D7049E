@@ -202,17 +202,23 @@ class MeshRenderer(Component):
             base.update({
                 "obj_path": self.obj_path,
                 "enabled": self.enabled,
-                "transform": self.transform.tolist() if self.transform is not None else None
+                "transform": self.transform.tolist() if self.transform is not None else None,
+                "vertices": self.vertex_input.tolist() if self.vertex_input is not None else None,
+                "indices": self.vertex_indices_input.tolist() if self.vertex_indices_input is not None else None
             })
             return base
 
     @classmethod
     def from_dict(cls, data, scene_manager):
         obj_path = data.get("obj_path", DEFAULT_MODEL_PATH)
+        vertices = data.get("vertices")
+        vertices = np.array(vertices, dtype='f4') if vertices is not None else None
+        indices = data.get("indices")
+        indices = np.array(indices, dtype='i4') if indices is not None else None
         enabled = data.get("enabled", True)
         transform = np.array(data.get("transform", np.identity(4)))
 
-        mesh_renderer = cls(obj_path=obj_path)
+        mesh_renderer = cls(obj_path=obj_path, vertices=vertices, indices=indices)
         mesh_renderer.enabled = enabled
         mesh_renderer.transform = transform
 

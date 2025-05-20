@@ -31,7 +31,7 @@ class Script(Component):
 
     def subscribe(self, event_emitter):
         with self.lock.gen_wlock():
-            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit', 'onClick', 'onDamageTaken', 'onHeal', 'onDeath'] # Maybe load from file
+            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit', 'onClick', 'onDamageTaken', 'onHeal', 'onDeath', 'onKeyPress', 'onKeyHold', 'onKeyRelease'] # Maybe load from file
 
             # Check if context is set
             if not self.globals:
@@ -77,6 +77,7 @@ class Script(Component):
             # Expose the proxy object to Lua
 
             proxy = LuaProxy(component, self.lua)
+            print(proxy.obj)
             game_api[component_name] = proxy
 
         env["game"] = game_api
@@ -153,6 +154,7 @@ class Script(Component):
                 "load_scene" : scene_manager.load_scene,
                 "get_current_scene" : scene_manager.get_current_scene,
                 "get_scenes" : scene_manager.get_scenes,
+                "get_current_cameras" : scene_manager.get_current_cameras,
             }
         }
         name = data.get("name", "Script")
