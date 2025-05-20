@@ -38,6 +38,7 @@ class Window(ABC):
                 else:
                     with dpg.group(tag=child.name, parent=self.name):
                         child.load()
+            self.is_opened = True
         else:
             print(f"Window '{self.name}' is already loaded.")
 

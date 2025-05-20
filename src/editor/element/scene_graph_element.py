@@ -25,7 +25,7 @@ class SceneGraphElement(DisplayElement):
     def _on_select(self, sender, app_data, user_data=None):
         print(f"Selected node: {self.node.get_name()}")
         if self.inspector_callback:
-            self.inspector_callback(self.node)
+            self.inspector_callback()
 
     def _on_delete(self, sender, app_data, user_data=None):
         node = user_data
