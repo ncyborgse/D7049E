@@ -36,5 +36,3 @@ class SceneGraphElement(DisplayElement):
 
         if self.refresh_callback:
             self.refresh_callback()
-
-

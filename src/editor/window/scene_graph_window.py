@@ -12,12 +12,19 @@ class SceneGraphWindow(Window):
         self.selected_scene_graph = scene_manager.get_current_scene()
         print("debug | (in SceneGraphWindow) SceneManager.get_current_scene(): ", scene_manager.get_current_scene(), "\n")
         print("SceneGraphWindow initialized with scene graph:", self.selected_scene_graph, "\n")
+        self.set_root_node()
 
     def load_scene_graph(self, scene_graph):
         print("debug | scene graph window/load scene graph\n")
 
         self.selected_scene_graph = scene_graph
+        self.set_root_node()
         self.refresh_scene_graph_window()
+
+    def set_root_node(self):
+        print("debug | scene graph window/set root node\n")
+        scene_graph_root = self.selected_scene_graph.get_root()
+        self.scene_graph_root_element = SceneGraphElement(scene_graph_root, inspector_callback=self.inspector_window.refresh_inspector, refresh_callback=self.refresh_scene_graph_window)
 
     def refresh_scene_graph_window(self):
         print("debug | scene graph window/refresh scene graph\n")
@@ -43,3 +50,7 @@ class SceneGraphWindow(Window):
     def draw_self(self):
         dpg.add_text("Scene Graph")
         dpg.add_separator()
+        with dpg.group(horizontal=True):
+            dpg.add_button(label="Refresh", callback=self.refresh_scene_graph_window())
+        dpg.add_separator()
+        self.scene_graph_root_element.draw_self()

@@ -7,7 +7,7 @@ from scene.objects.node_builder import NodeBuilder
 class AddSceneGraphElement(DisplayElement):
     def __init__(self, inspector_callback=None, refresh_callback=None, width=800, height=30):
         super().__init__("AddNode", width, height)
-        self.node_builder = NodeBuilder("src/assets/prefabs")
+        self.node_builder = NodeBuilder("assets/prefabs")
         self.inspector_callback = inspector_callback 
         self.refresh_callback = refresh_callback
         self.scene_manager = scene_manager
