@@ -14,6 +14,7 @@ moveNode(node)
 
 class SceneGraph:
     def __init__(self, node=None, name="Scene"):
+        print("debug | Creating SceneGraph")
         self.lock = rwlock.RWLockFair()
         self.name = name
         if node:

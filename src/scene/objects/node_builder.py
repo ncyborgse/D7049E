@@ -38,8 +38,8 @@ class NodeBuilder:
 
         # Check if the file already exists
 
-        if os.path.exists(prefab_path):
-            raise FileExistsError(f"Prefab '{prefabName}' already exists at {prefab_path}.")
+        #if os.path.exists(prefab_path):
+        #    raise FileExistsError(f"Prefab '{prefabName}' already exists at {prefab_path}.")
         
         with open(prefab_path, 'w') as file:
             json.dump(data, file, indent=4)

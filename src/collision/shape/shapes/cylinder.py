@@ -1,4 +1,4 @@
-import pybullet as p
+#import pybullet as p
 from collision.shape.shape import Shape
 from collision.shape.shape_registry import register_shape
 

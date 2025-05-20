@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Add the project root to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
 from core.global_scene_manager import scene_manager
 from scene.component.components.script import Script
 from scene.component.components.collider import Collider
@@ -10,7 +16,7 @@ from scene.objects.node import Node
 from core.game_manager import GameManager
 
 import numpy as np
-import moderngl
+#import moderngl
 
 engine_api = {
     "SceneManager" : {
@@ -26,7 +32,7 @@ scene_manager.add_scene(scene_graph)
 scene_manager.load_scene("Scene1")
 
 
-src = "src/test/testScript.lua"
+src = "testScript.lua"
 script1 = Script("Script1")
 
 
@@ -43,7 +49,7 @@ transform[3][0] = 0.5
 collider2.set_transform(transform)
 
 
-mesh_renderer = MeshRenderer("assets/models/Trollboyobj.obj")
+mesh_renderer = MeshRenderer("../../assets/models/Trollboyobj.obj")
 
 clickable = Clickable()
 
