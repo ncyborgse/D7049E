@@ -45,6 +45,7 @@ class SceneManager:
                 raise ValueError("Scene not found in scene list.")
 
     def remove_scene(self, index):
+        print("debug | REMOVING A SCENE")
         with self.lock:
             if 0 <= index < len(self.scenes):
                 del self.scenes[index]
@@ -54,6 +55,7 @@ class SceneManager:
                 raise IndexError("Scene index out of range.")
 
     def load_scene(self, scene_name):
+        print("debug | (in load_scene) before the LOCK")
         with self.lock:
             for index, scene in enumerate(self.scenes):
                 if scene.get_name() == scene_name:
@@ -77,8 +79,8 @@ class SceneManager:
 
                         self.current_cameras = list_of_cameras
 
-                    print("debug | (in load_scene) self.current_scene_index: ", self.current_scene_index, "\n")
-                    print("debug | (in load_scene) return scene: ", scene, "\n")
+                    print("debug | (scene manager / load_scene) self.current_scene_index: ", self.current_scene_index, "\n")
+                    print("debug | (scene manager / load_scene) return scene: ", scene, "\n")
 
                     return scene
             raise ValueError(f"Scene '{scene_name}' not found.")

@@ -2,7 +2,6 @@ from pathlib import Path
 import json
 
 
-
 class ConfigManager:
     def __init__(self):
         self.config_src = Path(__file__).parent.parent.parent / "assets" / "config" / "config.json"
@@ -29,5 +28,3 @@ class ConfigManager:
             config["projects_path"] = str(project_path)
         with open(self.config_src, 'w') as file:
             json.dump(config, file, indent=4)
-
-    

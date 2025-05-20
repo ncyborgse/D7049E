@@ -10,16 +10,17 @@ class SceneGraphWindow(Window):
         super().__init__(name, width, height)
         self.inspector_window = inspector_window
         self.selected_scene_graph = scene_manager.get_current_scene()
-        print("debug | (in SceneGraphWindow) SceneManager.get_current_scene(): ", scene_manager.get_current_scene())
-        print("SceneGraphWindow initialized with scene graph:", self.selected_scene_graph)
+        print("debug | (in SceneGraphWindow) SceneManager.get_current_scene(): ", scene_manager.get_current_scene(), "\n")
+        print("SceneGraphWindow initialized with scene graph:", self.selected_scene_graph, "\n")
 
     def load_scene_graph(self, scene_graph):
-        print("scene graph window/load scene graph\n")
+        print("debug | scene graph window/load scene graph\n")
 
         self.selected_scene_graph = scene_graph
         self.refresh_scene_graph_window()
 
     def refresh_scene_graph_window(self):
+        print("debug | scene graph window/refresh scene graph\n")
         self.children.clear()
 
         if self.selected_scene_graph:
@@ -38,7 +39,7 @@ class SceneGraphWindow(Window):
         if self.is_opened:
             self.unload()
             self.load()
-    
+
     def draw_self(self):
         dpg.add_text("Scene Graph")
         dpg.add_separator()

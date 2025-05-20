@@ -1,9 +1,9 @@
 from editor.window.window import Window
-from scene.objects.node_builder import NodeBuilder
+#from scene.objects.node_builder import NodeBuilder
 from core.config_manager import ConfigManager
 import dearpygui.dearpygui as dpg
 import os
-from editor.window.main_window import MainWindow
+#from editor.window.main_window import MainWindow
 
 class ProjectSelectionWindow(Window):
     def __init__(self, name, state_manager, on_project_loaded, width=1200, height=800):
@@ -47,6 +47,7 @@ class ProjectSelectionWindow(Window):
         print(f"Loading project: {project_name}")
         self.state_manager.load_project(project_name)
         
+        self.state_manager.save_project()
         self.unload()
         self.on_project_loaded()
 

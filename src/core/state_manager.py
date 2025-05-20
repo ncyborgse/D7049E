@@ -10,6 +10,7 @@ class StateManager:
     def __init__(self):
         self.current_project = None
         self.config_manager = ConfigManager()
+        self.scene_manager = None
 
         # Identify the source directory for the users projects
 
@@ -17,6 +18,9 @@ class StateManager:
 
     def set_scene_manager(self, scene_manager: SceneManager):
         self.scene_manager = scene_manager
+
+    def get_scene_manager(self):
+        return self.scene_manager
 
     def new_project(self, project_name):
         print("debug | state manager/new project\n")
@@ -32,6 +36,9 @@ class StateManager:
             raise FileExistsError(f"Project '{project_name}' already exists.")
         
         new_scene = SceneGraph(name=f"{project_name}_scene")
+
+        print("debug | state manager/new project, scene_manager:\n", self.scene_manager)
+
         self.scene_manager.add_scene(new_scene)
         self.scene_manager.load_scene(new_scene.get_name())
         # self.scene_manager.set_current_scene(new_scene) # already exists in load_scene
@@ -43,6 +50,8 @@ class StateManager:
         if self.scene_manager is None:
             raise ValueError("No scene manager is set.")
         
+        
+        print("Saving project! :) ")
         # Save the current scene to the project directory
         project_path = self.config_manager.get_config()["projects_path"]
         project_dir = project_path + "/" + self.current_project
