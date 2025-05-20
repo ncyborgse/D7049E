@@ -16,6 +16,7 @@ class DisplayManager:
         dpg.start_dearpygui()
         dpg.destroy_context()
 
+
     def add_window(self, window):
         self.windows.append(window)
         window.set_parent(self)
@@ -23,22 +24,22 @@ class DisplayManager:
     def remove_window(self, window_name):
         for window in self.windows:
             if window.name == window_name:
-                self.windows.remove(window)
-                
+                self.windows.remove(window)                
                 break
-
         else:
             print(f"Window '{window_name}' not found.")
+
 
     def load_window(self, window_name):
         for window in self.windows:
             if window.name == window_name:
-                with dpg.window(label=window.name, tag=window.name, width=window.width, height=window.height):
-                    window.load()
+#                with dpg.window(label=window.name, tag=window.name, width=window.width, height=window.height):
+                window.load(window.get_parent())
                 break
         else:
             print(f"Window '{window_name}' not found.")
-    
+
+
     def unload_window(self, window_name):
         for window in self.windows:
             if window.name == window_name:
