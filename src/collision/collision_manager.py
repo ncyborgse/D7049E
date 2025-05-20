@@ -1,4 +1,4 @@
-#import pybullet as p
+import pybullet as p
 from scipy.spatial.transform import Rotation as R
 import time
 import numpy as np

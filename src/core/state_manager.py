@@ -81,6 +81,7 @@ class StateManager:
         self.scene_manager.set_current_proj(project_name)
         project_path = self.config_manager.get_config()["projects_path"]
         project_dir = project_path + "/" + project_name + "/project"
+        print(project_dir)
         if not os.path.exists(project_dir):
             raise FileNotFoundError(f"Project '{project_name}' does not exist.")
         

@@ -27,9 +27,9 @@ class MainWindow(Window):
         print("Running program...")
 
         if self.state_manager.get_scene_manager():
-            project_name = self.state_manager.get_scene_manager().get_project_name()
+            project_name = self.state_manager.get_scene_manager().get_current_proj()
         
-            file = Path(__file__).parent.parent / "core" / "run_game.py"
+            file = Path(__file__).parent.parent.parent / "core" / "run_game.py"
             if not file.exists():
                 raise FileNotFoundError(f"File {file} does not exist.")
 
