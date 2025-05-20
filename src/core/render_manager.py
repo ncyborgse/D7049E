@@ -121,15 +121,24 @@ class RenderManager:
                 key = pyglet.window.key.symbol_string(k)
                 curr_keys.append(key)
 
+
+        # Clear duplicate keys in arrow key case
+
+        curr_keys = list(set(curr_keys))
+
         #print("Keys pressed: " + str(curr_keys))
+
         for key in curr_keys:
+
             if key not in self.prev_keys:
+                #print("Key pressed: " + str(key))
                 root.call_event_rec("onKeyPress", key)
             else:
                 root.call_event_rec("onKeyHold", key, dt)
         
         for key in self.prev_keys:
             if key not in curr_keys:
+                #print("Key released: " + str(key))
                 root.call_event_rec("onKeyRelease", key)
 
         self.prev_keys = curr_keys

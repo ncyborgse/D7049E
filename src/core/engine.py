@@ -9,21 +9,17 @@ class Engine:
         self.lock = rwlock.RWLockFair()
 
     def run(self):
-        print("Starting engine")
         previous_time = time.time()
 
         # Subscribe all components to their nodes event emitters
-
-        print("Subscribing all components to their nodes event emitters")
         scene_graph = self.scene_manager.get_current_scene()
         root = scene_graph.get_root()
-        print("Root node found")
+
         if root:
             root.subscribe_children_rec()
         else:
             raise RuntimeError("Root node not found in the scene graph.")
 
-        print("Starting engine loop")
         while not self.shutdown_event.is_set():
             # Update each frame with delta time
             current_time = time.time()

@@ -10,6 +10,8 @@ from pywavefront import Wavefront
 from scene.component.component import Component
 from core.component_registry import register_component
 from readerwriterlock import rwlock
+from core.config_manager import ConfigManager
+from core.global_scene_manager import scene_manager
 
 
 @register_component
@@ -37,7 +39,12 @@ class MeshRenderer(Component):
         if path is None and self.vertex_input is not None and self.vertex_indices_input is not None:
             vertices, indices = self._prepare_from_raw()
         elif path:
-            self.scene = Wavefront(self.obj_path, collect_faces=True)
+            config_manager = ConfigManager()
+            projects_path = config_manager.get_config()["projects_path"]
+            proj = scene_manager.get_current_proj()
+            path = projects_path + "/" + proj + "/assets/" + path
+
+            self.scene = Wavefront(path, collect_faces=True)
             vertices, indices = self._prepare_vertex_data()
         else:
             raise ValueError("Either obj_path or vertex_input and vertex_indices_input must be provided.")

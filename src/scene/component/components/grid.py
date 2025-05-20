@@ -62,7 +62,6 @@ class Grid(Component):
         grid.set_size(data.get("width", 10), data.get("height", 10))
         grid.set_tile_size(data.get("tile_width", 1), data.get("tile_height", 1))
         grid.set_tile_neighbors(data.get("num_neighbors", 4))
-
         return grid
 
                 

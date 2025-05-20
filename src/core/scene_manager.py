@@ -7,6 +7,8 @@ class SceneManager:
         self.scenes = []
         self.current_scene_index = None
         self.current_cameras = []
+        self.grid_system = None
+        self.current_proj = None
         self.lock = threading.RLock()
 
     def add_scene(self, scene):
@@ -25,6 +27,22 @@ class SceneManager:
         with self.lock:
             print("debug | SceneManager get scenes LOCK: ", self.scenes, "\n")
             return self.scenes
+        
+    def set_current_proj(self, proj_name):
+        with self.lock:
+            self.current_proj = proj_name
+
+    def get_current_proj(self):
+        with self.lock:
+            return self.current_proj
+
+    def add_grid_system(self, grid_system):
+        with self.lock:
+            self.grid_system = grid_system
+    
+    def get_grid_system(self):
+        with self.lock:
+            return self.grid_system
 
     def get_current_scene(self):
         #print("debug | scene manager/get current scene: \n", self.scenes[self.current_scene_index])
@@ -57,13 +75,28 @@ class SceneManager:
     def load_scene(self, scene_name):
         print("debug | (in load_scene) before the LOCK")
         with self.lock:
+
             for index, scene in enumerate(self.scenes):
                 if scene.get_name() == scene_name:
+                    # Find a grid in the scene
+
+                    root = scene.get_root()
+                    nodes_to_check = [root]
+        
+                    while nodes_to_check:
+                        current_node = nodes_to_check.pop()
+                        grid = current_node.get_component("Grid")
+                        if grid:
+                            self.grid_system.set_grid(grid)
+
+                        # Add children to the list for further checking
+                        for child in current_node.get_children():
+                            nodes_to_check.append(child)
+
                     self.current_scene_index = index
 
                     # Look for the current camera in the scene
 
-                    root = scene.get_root()
                     nodes_to_check = [root]
                     list_of_cameras = []
 
