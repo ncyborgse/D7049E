@@ -2,6 +2,8 @@ from scene.component.component import Component
 from lupa import LuaRuntime
 from utilities.lua_proxy import LuaProxy
 from core.component_registry import register_component
+from core.global_scene_manager import scene_manager
+from core.config_manager import ConfigManager
 import threading
 from readerwriterlock import rwlock
 
@@ -15,6 +17,7 @@ class Script(Component):
         # Try to create a table to see if Lua is working
 
         self.globals = None
+        self.config_manager = ConfigManager()
 
         # Set up environment for Lua
 
@@ -31,7 +34,7 @@ class Script(Component):
 
     def subscribe(self, event_emitter):
         with self.lock.gen_wlock():
-            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit', 'onClick', 'onDamageTaken', 'onHeal', 'onDeath', 'onKeyPress', 'onKeyHold', 'onKeyRelease'] # Maybe load from file
+            supported_events = ['onStart', 'onUpdate', 'onRender', 'onSpawn', 'onDestroy', 'overlap', 'enter', 'exit', 'onClick', 'onDamageTaken', 'onHeal', 'onDeath', 'onKeyPress', 'onKeyHold', 'onKeyRelease', 'onAttack'] # Maybe load from file
 
             # Check if context is set
             if not self.globals:
@@ -85,16 +88,32 @@ class Script(Component):
         return env
 
     def attach_script(self, source, engine_api, public_vars=None):
+        engine_api = {
+            "SceneManager" : {
+                "load_scene" : scene_manager.load_scene,
+                "get_current_scene" : scene_manager.get_current_scene,
+                "get_scenes" : scene_manager.get_scenes,
+                "get_current_cameras" : scene_manager.get_current_cameras,
+            },
+            "Object" : {
+                "get_self" : self.get_parent
+            }
+        }
+        
         with self.lock.gen_wlock():
         
             # Add engine API to Lua environment
+            proj_path = self.config_manager.get_config()["projects_path"]
+            proj = scene_manager.get_current_proj()
+
 
             self.source = source
+            path = proj_path + "/" + proj + "/scripts/" + source
             self.engine_api = engine_api
 
             # Read script file and subscribe to events
 
-            with (open(source, 'r')) as file:
+            with (open(path, 'r')) as file:
                 script = file.read()
 
                 self.environment = self.create_environment()
@@ -149,17 +168,21 @@ class Script(Component):
 
     @classmethod
     def from_dict(cls, data, scene_manager):
+
+        name = data.get("name", "Script")
+        source = data.get("source")
+        public_vars = data.get("public_vars", {})
+        script = Script(name=name)
         engine_api = {
             "SceneManager" : {
                 "load_scene" : scene_manager.load_scene,
                 "get_current_scene" : scene_manager.get_current_scene,
                 "get_scenes" : scene_manager.get_scenes,
                 "get_current_cameras" : scene_manager.get_current_cameras,
+            },
+            "Object" : {
+                "get_self" : script.get_parent
             }
         }
-        name = data.get("name", "Script")
-        source = data.get("source")
-        public_vars = data.get("public_vars", {})
-        script = Script(name=name)
         script.attach_script(source, engine_api, public_vars=public_vars)
         return script

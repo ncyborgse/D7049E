@@ -3,6 +3,7 @@ from scene.objects.node import Node
 from scene.component.components.tile import Tile
 from scene.component.components.mesh_renderer import MeshRenderer
 from core.global_scene_manager import scene_manager
+from readerwriterlock import rwlock
 
 import heapq
 import itertools
@@ -10,25 +11,31 @@ import itertools
 class GridSystem:
     def __init__(self):
         self.grid = None
+        self.lock = rwlock.RWLockFair()
 
     def set_grid(self, grid):
-        self.grid = grid
+        with self.lock.gen_wlock():
+            self.grid = grid
 
     def get_grid(self):
-        return self.grid
+        with self.lock.gen_rlock():
+            return self.grid
 
     def update_grid(self, width, height, tile_edges=4, tile_height=1, tile_width=1):
-        if self.grid is None:
+        if self.get_grid() is None:
             raise ValueError("Grid is not set. Please set the grid before updating.")
         # Create tiles as children to the parent node
-        
 
-        self.grid.set_size(width, height)
-        self.grid.set_tile_size(tile_width, tile_height)
-        self.grid.set_tile_neighbors(tile_edges)
+        with self.lock.gen_wlock():
+            self.grid.set_size(width, height)
+            self.grid.set_tile_size(tile_width, tile_height)
+            self.grid.set_tile_neighbors(tile_edges)
+
         # Remove all current child tiles
 
-        for child in self.grid.get_parent().get_children():
+        
+
+        for child in self.get_grid().get_parent().get_children():
             child.get_components()
             for component in child.get_components():
                 if isinstance(component, Tile):
@@ -108,18 +115,33 @@ class GridSystem:
 
     
     def is_visible(self, tile1, tile2):
-        if self.grid is None:
+        if self.get_grid() is None:
             raise ValueError("Grid is not set. Please set the grid before checking visibility.")
 
         # Search cardinal directions for tile2 from tile1
 
         for i in range(4):
-            while tile1.get_neighbors()[i] is not None and tile1.get_neighbors()[i].is_see_through():
-                if tile1.get_neighbors()[i] == tile2:
+            tile = tile1
+            while tile.get_neighbors()[i] is not None and tile.get_neighbors()[i].is_see_through():
+                if tile.get_neighbors()[i] == tile2:
                     return True
-                tile1 = tile1.get_neighbors()[i]
+                tile = tile.get_neighbors()[i]
+        
         return False
     
+    def distance(self, tile1, tile2):
+        if self.grid is None:
+            raise ValueError("Grid is not set. Please set the grid before calculating distance.")
+        if tile1==tile2:
+            return 0
+        
+        # Get the distance between two tiles regardless of visibility/movement cost
+
+        coords = tile1.get_coords()
+        coords2 = tile2.get_coords()    
+
+        return abs(coords[0] - coords2[0]) + abs(coords[1] - coords2[1])
+
     def navigate(self, tile1, tile2):
         if self.grid is None:
             raise ValueError("Grid is not set. Please set the grid before navigating.")
@@ -210,7 +232,11 @@ class GridSystem:
 
             # Attach tiles to neighboring nodes
 
-            # Assuming order of tiles is preserved when loaded
+            # Assuming order of tiles is preserved when loaded 
+
+            # Instead, sort by x and y coordinates to ensure correct order
+
+            tiles.sort(key=lambda tile: (tile.get_coords()[0], tile.get_coords()[1]))
 
             # Indices are 0 = left, 1 = up, 2 = right, 3 = down
 
@@ -226,6 +252,7 @@ class GridSystem:
                         tile.add_neighbor(tiles[(i + 1) * height + j], 2)
                     if j > 0:
                         tile.add_neighbor(tiles[i * height + (j - 1)], 3)
+
 
 
             

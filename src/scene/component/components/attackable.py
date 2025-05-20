@@ -14,10 +14,8 @@ class Attackable(Component):
         self.lock = rwlock.RWLockFair()
 
     def subscribe(self, event_emitter):
-        with self.lock.gen_wlock():
-            # Subscribe to events related to attackable entities
-            event_emitter.on("onDamageTaken", self.take_damage)
-            event_emitter.on("onHeal", self.heal)
+        pass
+
 
 
     def take_damage(self, damage):
@@ -28,6 +26,8 @@ class Attackable(Component):
             self.health -= damage_taken
             if self.health <= 0:
                 self.die()
+        parent = self.get_parent()
+        parent.call_event("onDamageTaken", damage_taken)
     
     def set_max_health(self, max_health):
         with self.lock.gen_wlock():
@@ -63,6 +63,9 @@ class Attackable(Component):
             if not self.alive:
                 raise RuntimeError("Cannot heal, the entity is already dead.")
             self.health = min(self.health + amount, self.max_health)
+        parent = self.get_parent()
+        parent.call_event("onHeal", amount)
+        
 
     def attack(self, target):
         if not isinstance(target, Attackable):
@@ -71,6 +74,7 @@ class Attackable(Component):
 
     def die(self):
         self.alive = False
+        self.parent.call_event("onDeath")
 
     def to_dict(self):
         base = super().to_dict()

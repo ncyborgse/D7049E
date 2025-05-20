@@ -100,8 +100,7 @@ class LuaProxy:
             return tbl
         elif hasattr(value, '__dict__') or callable(value):
             return LuaProxy(value, self.lua)
-        elif isinstance(ValueError, (int, float, str, bool, type(None))):
-            return value
         else:
-            return LuaProxy(value, self.lua)
+            return value
+
 

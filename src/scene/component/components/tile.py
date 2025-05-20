@@ -5,7 +5,7 @@ from core.component_registry import register_component
 @register_component
 class Tile(Component):
     def __init__(self, x,y, num_neighbors):
-        super().__init__(name="Tile<" + str(x) + ", " + str(y) + ">")
+        super().__init__(name="Tile")
         self.lock = rwlock.RWLockFair()
         self.num_neighbors = num_neighbors
         self.x = x

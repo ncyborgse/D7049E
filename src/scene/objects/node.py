@@ -45,16 +45,25 @@ class Node:
     def call_event(self, event, *args, **kwargs):
         with self.lock.gen_rlock():
             event_emitter = self.event_emitter
-            
-        event_emitter.emit(event, *args, **kwargs)
+        try:
+            event_emitter.emit(event, *args, **kwargs)
+        except Exception as e:
+            print(f"Error in event '{event}' on node '{self.name}': {e}")
 
     def call_event_rec(self, event, *args, **kwargs):
         #print("Calling event " + event + " on node " + self.name)
+        self._call_event_rec(event, set(), *args, **kwargs)
+
+    def _call_event_rec(self, event, visited, *args, **kwargs):
+
+        if self in visited:
+            return
+        visited.add(self)
         with self.lock.gen_rlock():
             children = list(self.children)
         self.call_event(event, *args, **kwargs)
         for child in children:
-            child.call_event_rec(event, *args, **kwargs)
+            child._call_event_rec(event, visited, *args, **kwargs)
 
     def subscribe_children_rec(self):
         with self.lock.gen_rlock():
@@ -155,6 +164,7 @@ class Node:
         # If transform is list, convert to 4x4 numpy array
         if isinstance(transform, list):
             transform = np.array(transform).reshape((4, 4))
+        #print(transform.shape)
         if transform.shape != (4, 4):
             raise ValueError("Transform must be a 4x4 matrix.")
         with self.lock.gen_wlock():
